@@ -6,5 +6,5 @@ const { validate, validateUser, loginValidator } = require('../middleware/valida
 
 router.post('/register', validate(validateUser), userController.registerUser);
 router.post('/login', validate(loginValidator),userController.loginUser);
-
+router.post('/forgot-pw', userController.forgot_password);
 module.exports = router;
