@@ -1,11 +1,6 @@
 const mongoose = require("mongoose");
 const OTPSchema = mongoose.Schema({
-    user: { type: mongoose.Schema.Types.ObjectId, required: true, refPath: 'checkModel' },
-    checkModel: {
-        type: String,
-        ref: 'User',
-        // required: true,
-    },
+    user: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
     code: { type: String },
     type: { type: String },
     expiresIn: { type: Date }

@@ -47,7 +47,19 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  resetPassword: { type: Boolean, default: false },
+  resendOTP: {
+    resend: {
 
+      type: Boolean, default: false
+    },
+    numberSent: {
+      type: Number
+    },
+    lastSent: {
+      type: Date,
+    }
+  }
 
 });
 userSchema.methods.generateAuthToken = function () {
