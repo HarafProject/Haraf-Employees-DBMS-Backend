@@ -27,9 +27,13 @@ exports.validateUser = (req) => {
         .message('Please enter a valid phone number in international format')
         .required(),
       email: Joi.string().email().min(5).max(255).required(),
-      lga: Joi.string().min(2).max(250).required(),
+      lga: Joi.string().regex(/^[0-9a-fA-F]{24}$/)
+      .message('Please enter a valid LGA ID')
+      .required(),
       password: Joi.string().min(5).max(255).required(),
-      region: Joi.string().min(5).max(255).required(),
+      zone: Joi.string().regex(/^[0-9a-fA-F]{24}$/)
+      .message('Please enter a valid Zone ID')
+      .required(),
     });
     return schema.validate(req);
   };
