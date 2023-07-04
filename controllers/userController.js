@@ -34,7 +34,7 @@ exports.loginUser = async (req, res) => {
   const validPassword = await bcrypt.compare(req.body.password, user.password);
   if (!validPassword) return res.status(422).json({ error: 'Invalid credentials' });
 
-  if (!user.isVerified) return res.status(StatusCodes.UNAUTHORIZED).json({ error: 'Un-Authorized action. Please contact Admin' });
+  if (!user.isVerified) return res.status(StatusCodes.UNAUTHORIZED).json({ error: 'Un-Authorized action. You have not been granted access yet. please contact admin.' });
 
   const token = user.generateAuthToken();
 
@@ -152,4 +152,12 @@ exports.reset_password = async (req, res) => {
 
   });
 
+}
+
+exports.getUser = async (req, res) => {
+  const user = await User.findById(req.user._id)
+    .select("-password -isVerified -resetPassword -resendOTP")
+    .populate("zone", "_id name")
+    .populate("lga", "_id name");
+  res.status(StatusCodes.OK).json(user);
 }

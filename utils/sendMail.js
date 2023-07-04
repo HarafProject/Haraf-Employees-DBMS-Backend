@@ -12,15 +12,15 @@ exports.Otp_ForgotPassword = async (email, otp) => {
       secure: true,
       auth: {
         pass: config.PASSMAILER,
-        user: "activefarmersinfo@gmail.com"
+        user: "employeesdatabase01@gmail.com"
       },
     });
 
     await transporter.sendMail({
-      from: "activefarmersinfo@gmail.com",
+      from: "haraf@gmail.com",
       to: email,
       subject: ' HARAF EDMS Reset Password',
-      html:` <b> Hi Dear </b></br>
+      html: ` <b> Hi Dear </b></br>
         <p>We recieved a request to reset the Password on your HARAF EDMS Service Account.</p>
         </br>
         <p>Please enter this code to complete password reset.</p>

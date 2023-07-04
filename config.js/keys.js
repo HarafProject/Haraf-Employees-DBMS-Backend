@@ -5,5 +5,6 @@ module.exports={
     PASSMAILER:process.env.PASSMAILER,
     EMAIL:process.env.EMAIL,
     EMAIL_USER:process.env.EMAIL_USER,
-    EMAIL_PASS: process.env.EMAIL_PASS
+    EMAIL_PASS: process.env.EMAIL_PASS,
+    PAYSTACK_SECRET_KEY:process.env.PAYSTACK_SECRET_KEY
 }
