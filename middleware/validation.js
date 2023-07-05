@@ -35,6 +35,28 @@ exports.validateUser = (req) => {
     zone: Joi.string().regex(/^[0-9a-fA-F]{24}$/)
       .message('Please enter a valid Zone ID')
       .required(),
+    });
+    return schema.validate(req);
+  };
+
+  exports.validateEmployee = (req) => {
+    const schema = Joi.object({
+      fullName: Joi.string().min(2).max(250).required(),
+      phone: Joi.string().min(2).max(250).required(),
+      accountNumber: Joi.string().min(2).max(250).required(),
+      bankName: Joi.string().min(2).max(250).required(),
+      ward: Joi.string().min(2).max(255).required(),
+      address: Joi.string().min(2).max(250).required(),
+      age: Joi.string().min(2).max(250).required(),
+      workTypology: Joi.string().min(2).max(250),
+      maritalStatus: Joi.string().min(2).max(250),
+      specialAbility: Joi.string().min(2).max(250),
+      householdSize: Joi.string().min(2).max(250),
+      householdHead: Joi.string().min(2).max(250),
+      gender: Joi.string().min(2).max(250),
+    });
+    return schema.validate(req);
+  };
   });
   return schema.validate(req);
 };
