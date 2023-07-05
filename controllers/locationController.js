@@ -1,6 +1,7 @@
 const { default: mongoose, mongo } = require('mongoose');
 const LGA = require('../models/lga');
 const Zone = require("../models/zone")
+const Ward = require("../models/ward")
 // const State = require('../models/state');
 const StatusCodes = require('../utils/status-codes');
 // const Country = require('./../models/country');
@@ -240,22 +241,95 @@ exports.addLGAList = async (req, res) => {
 
 
 exports.lgas = async (req, res) => {
- 
-        const lgas = await LGA.find().sort({ name: "asc" }).populate('zone', '_id name').exec();
 
-        return res.status(StatusCodes.OK).json({
-            status: 'success',
-            lgas
-        });
+    const lgas = await LGA.find().sort({ name: "asc" }).populate('zone', '_id name').exec();
+
+    return res.status(StatusCodes.OK).json({
+        status: 'success',
+        lgas
+    });
 
 }
 exports.lgasByZone = async (req, res) => {
- 
+
     const lgas = await LGA.find({ zone: req.params.zone_id }).sort({ name: "asc" }).populate('zone', '_id name').exec();
 
     return res.status(StatusCodes.OK).json({
         status: 'success',
         lgas
+    });
+
+}
+
+exports.addWard = async (req, res) => {
+    try {
+        const check = await Ward.find({ lga: req.body.lga, name: req.body.ward }).exec();
+
+        if (check.length > 0) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                status: 'failed',
+                error: 'The Ward already exist'
+            });
+        }
+
+        const data = new Ward({
+            lga: req.body.lga,
+            name: req.body.ward
+        });
+
+        await data.save();
+
+        const wards = await Ward.find({ lga: req.body.lga }).populate('lga', '_id name').exec();
+
+        return res.status(StatusCodes.CREATED).json({
+            status: 'success',
+            message: 'You have successfully added a LGA',
+            wards
+        });
+    } catch (error) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+            status: 'failed',
+            error: error
+        });
+    }
+}
+
+exports.addWardList = async (req, res) => {
+	
+    req.body.wards.forEach(async ward => {
+        const check = await Ward.find({ lga: req.body.lga, name: ward }).exec();
+
+        if (check.length === 0) {
+            //validate the state
+            const lga = await LGA.findById(req.body.lga).exec();
+
+            if (lga !== null) {
+                const data = new Ward({
+                    lga: req.body.lga,
+                    name: ward
+                });
+
+                await data.save();
+            }
+
+        }
+    });
+    const wards = await Ward.find({ lga: req.body.lga }).sort({ name: "asc" }).populate('lga', '_id name').exec();
+
+    return res.status(StatusCodes.CREATED).json({
+        status: 'success',
+        message: 'You have successfully added Ward(s)',
+        wards
+    });
+}
+
+exports.wardsByLGA = async (req, res) => {
+
+    const wards = await Ward.find({ lga: req.params.lga_id }).sort({ name: "asc" }).populate('lga', '_id name').exec();
+
+    return res.status(StatusCodes.OK).json({
+        status: 'success',
+        wards
     });
 
 }

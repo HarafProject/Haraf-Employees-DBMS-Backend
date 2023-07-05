@@ -17,5 +17,9 @@ locationRoutes.post('/lga/list', locationController.addLGAList);
 locationRoutes.get('/lga', locationController.lgas);
 locationRoutes.get('/lga/:zone_id', locationController.lgasByZone);
 
+locationRoutes.post('/ward', locationController.addWard);
+locationRoutes.post('/ward/list', locationController.addWardList);
+locationRoutes.get('/lga/:lga_id', locationController.wardsByLGA);
+
 
 module.exports = locationRoutes;

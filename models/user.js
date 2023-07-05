@@ -72,6 +72,8 @@ userSchema.methods.generateAuthToken = function () {
       phone: this.phone,
       role: this.role,
       password: this.password,
+      zone: this.zone,
+      lga: this.lga
     },
     process.env.JWT,
     {
