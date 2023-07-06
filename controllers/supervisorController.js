@@ -1,7 +1,11 @@
+const { default: mongoose } = require("mongoose");
 const { bankList, verifyAccount } = require("../utils/paystack");
 const StatusCodes = require("../utils/status-codes");
 const WorkTypology = require("../models/workTypology");
 const Employee = require("../models/employee");
+const Request = require("../models/supervisorRequest")
+const Attendance = require("../models/attendance")
+const AttendanceRecord = require("../models/attendanceRecord")
 const cloudinary = require("../utils/cloudinary");
 
 exports.bank_details = async (req, res) => {
@@ -90,11 +94,11 @@ exports.addEmployee = async (req, res) => {
 };
 
 exports.getEmployee = async (req, res) => {
-    const employees = await Employee.find({lga:req.user.lga})
-    .populate("workTypology","name")
-    .populate("zone","name")
-    .populate("lga","name")
-    .populate("ward","name");
+    const employees = await Employee.find({ lga: req.user.lga })
+        .populate("workTypology", "name")
+        .populate("zone", "name")
+        .populate("lga", "name")
+        .populate("ward", "name");
     return res.status(StatusCodes.OK).json({
         success: true,
         employees
@@ -102,10 +106,105 @@ exports.getEmployee = async (req, res) => {
 };
 
 exports.new_employee_request = async (req, res) => {
+
     const { reason } = req.body
+    const newRequest = new Request({
+        user: req.user._id,
+        reason,
+        type: "new-employee"
+    })
+    await newRequest.save()
 
     res.status(StatusCodes.OK).json({
         status: "success",
+        message: "Request Sent successfully"
+
+    });
+}
+
+exports.delete_employee_request = async (req, res) => {
+
+    const { reason, employeeId } = req.body
+    const newRequest = new Request({
+        user: req.user._id,
+        reason,
+        type: "delete-employee",
+        employee: employeeId
+    })
+    await newRequest.save()
+
+    res.status(StatusCodes.OK).json({
+        status: "success",
+        message: "Request Sent successfully"
+
+    });
+}
+
+exports.edit_employee_request = async (req, res) => {
+
+    const { reason, employeeId } = req.body
+    const newRequest = new Request({
+        user: req.user._id,
+        reason,
+        type: "edit-employee",
+        employee: employeeId
+    })
+    await newRequest.save()
+
+    res.status(StatusCodes.OK).json({
+        status: "success",
+        message: "Request Sent successfully"
+
+    });
+}
+
+exports.submit_attendance = async (req, res) => {
+
+    const { comment, reason, zone, lga, date, attendanceRecord } = req.body;
+
+    // Check if attendance has already been submitted
+    let attendance = await Attendance.findOne({
+        lga,
+        date
+    })
+    if (attendance) return res.status(StatusCodes.BAD_REQUEST).json({ error: "Attendance for this LGA has already been submitted." });
+
+    attendance = Attendance({
+        _id: new mongoose.Types.ObjectId(),
+        submittedBy: req.user._id,
+        comment,
+        reason,
+        zone,
+        lga,
+        date,
+
+    })
+    let record = []
+    
+    attendanceRecord.forEach(async (item) => {
+        let employeeRecord = new AttendanceRecord({
+            _id: new mongoose.Types.ObjectId(),
+            supervisor: item.supervisor,
+            employee: item.employee,
+            attendance: attendance._id,
+            attempt: item.attempt,
+            date,
+            status: item.status,
+            zone: item.zone,
+            lga: item.lga,
+            ward: item.ward,
+            workTypology: item.workTypology
+        })
+        record.push(employeeRecord._id)
+        await employeeRecord.save()
+    })
+
+    attendance.attendanceRecord = record
+    await attendance.save()
+
+    res.status(StatusCodes.OK).json({
+        status: "success",
+        message: "Attendance Submitted successfully"
 
     });
 }

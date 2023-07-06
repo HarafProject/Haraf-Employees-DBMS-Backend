@@ -4,6 +4,7 @@ const StatusCodes = require("../utils/status-codes");
 const bcrypt = require("bcrypt");
 const otpGenerator = require("otp-generator");
 const { Otp_ForgotPassword } = require("../utils/sendMail")
+const generateUniqueId = require('generate-unique-id');
 
 exports.registerUser = async (req, res) => {
   let user = await User.findOne({ email: req.body.email });
@@ -11,17 +12,33 @@ exports.registerUser = async (req, res) => {
   if (user) return res.status(StatusCodes.BAD_REQUEST).json({ error: "User already exist. Please contact Admin" });
   // If user does not exist, create
   if (!user) {
-    user = new User(req.body, ["firstname", "surname", "email", "phone", "region", "lga", "password"]);
+    //generate order id
+    let userID = generateUniqueId({
+      length: 10,
+      useLetters: false
+    });
+    //make sure the order id is unique
+    let id_check = await User.findOne({ reference: userID }).exec();
+    while (id_check !== null) {
+      userID = generateUniqueId({
+        length: 10,
+        useLetters: false
+      });
+
+      id_check = await User.findOne({ reference: userID }).exec();
+    }
+    req.body.reference = userID
+    user = new User(req.body, ["firstname", "surname", "reference", "email", "phone", "region", "lga", "password"]);
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(user.password, salt);
     user = await user.save();
   }
 
-  const token = user.generateAuthToken();
+  // const token = user.generateAuthToken();
   res.status(StatusCodes.OK).json({
     status: "Success",
     message: "Account Created",
-    token,
+    // token,
   }
 
   );
@@ -160,4 +177,22 @@ exports.getUser = async (req, res) => {
     .populate("zone", "_id name")
     .populate("lga", "_id name");
   res.status(StatusCodes.OK).json(user);
+}
+
+exports.editProfile = async (req, res) => {
+  const { firstname, surname, email, phone } = req.body
+  const user = await User.findByIdAndUpdate(req.user._id, {
+    firstname,
+    surname,
+    email,
+    phone
+  },{ new: true })
+  .select("firstname email phone surname")
+  .exec()
+
+  res.status(StatusCodes.OK).json({
+    status: "success",
+    message: "Profile updated succesfully",
+    user
+  });
 }

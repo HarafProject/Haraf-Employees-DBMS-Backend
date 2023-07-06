@@ -39,12 +39,27 @@ exports.validateUser = (req) => {
   return schema.validate(req);
 };
 
+exports.validateEditUser = (req) => {
+  const schema = Joi.object({
+    firstname: Joi.string().min(2).max(250).required(),
+    surname: Joi.string().min(2).max(250).required(),
+    phone: Joi.string()
+      .pattern(new RegExp(/[1-9]\d{1,14}$/))
+      .message('Please enter a valid phone number in international format')
+      .required(),
+    email: Joi.string().email().min(5).max(255).required(),
+
+  });
+  return schema.validate(req);
+};
+
+
 exports.validateEmployee = (req) => {
   const schema = Joi.object({
     fullName: Joi.string().min(2).max(250).required(),
     phone: Joi.string().min(11)
-    .message('Please enter a valid phone number')
-    .required(),
+      .message('Please enter a valid phone number')
+      .required(),
     accountNumber: Joi.string().pattern(/^\d{10}$/)
       .message('Please enter a valid bank account number')
       .required(),
@@ -98,6 +113,61 @@ exports.supervisorRequest = (req) => {
     reason: Joi.string()
       .min(1)
       .required(),
+    employeeId: Joi.string()
+      .regex(/^[0-9a-fA-F]{24}$/)
+      .message('Please enter a valid Employee ID')
+      .optional(),
+
+  })
+  return schema.validate(req);
+}
+
+exports.attendance = (req) => {
+
+  const schema = Joi.object({
+    comment: Joi.string()
+      .min(1)
+      .message('Please enter any challenge encountered in the course of your work today.')
+      .required(),
+    reason: Joi.string()
+      .min(1)
+      .optional(),
+    zone: Joi.string().regex(/^[0-9a-fA-F]{24}$/)
+      .message('Please enter a valid Zone ID')
+      .required(),
+    lga: Joi.string().regex(/^[0-9a-fA-F]{24}$/)
+      .message('Please enter a valid lga ID')
+      .required(),
+    date: Joi.date()
+      .required(),
+    attendanceRecord: Joi.array().items(Joi.object({
+      status: Joi.string().required(),
+      attempt: Joi.array().items(Joi.object({
+        status: Joi.string().required(),
+        date: Joi.date()
+          .required(),
+      })),
+      date: Joi.date()
+        .required(),
+      zone: Joi.string().regex(/^[0-9a-fA-F]{24}$/)
+        .message('Please enter a valid Zone ID')
+        .required(),
+      lga: Joi.string().regex(/^[0-9a-fA-F]{24}$/)
+        .message('Please enter a valid lga ID')
+        .required(),
+      ward: Joi.string().regex(/^[0-9a-fA-F]{24}$/)
+        .message('Please enter a valid ward ID')
+        .required(),
+      supervisor: Joi.string().regex(/^[0-9a-fA-F]{24}$/)
+        .message('Please enter a valid Supervisor ID')
+        .required(),
+      employee: Joi.string().regex(/^[0-9a-fA-F]{24}$/)
+        .message('Please enter a valid Employee ID')
+        .required(),
+      workTypology: Joi.string().regex(/^[0-9a-fA-F]{24}$/)
+        .message('Please enter a valid Typology ID')
+        .required(),
+    })),
 
   })
   return schema.validate(req);

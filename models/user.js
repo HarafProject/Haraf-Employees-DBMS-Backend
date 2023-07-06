@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 
 const mongoose = require("mongoose");
 const userSchema = new mongoose.Schema({
+  reference: { type: String, required: true, unique: true },
   firstname: {
     type: String,
     required: true,
@@ -43,6 +44,11 @@ const userSchema = new mongoose.Schema({
     enum: ['super-admin', "admin", 'supervisor'],
     default: 'supervisor'
   },
+  operations: {
+    type: String,
+    enum: ["create", "read", "update", "delete", "super"],
+    default: "read"
+  },
   isVerified: {
     type: Boolean,
     default: false
@@ -61,6 +67,8 @@ const userSchema = new mongoose.Schema({
     }
   }
 
+}, {
+  timestamps: true,
 });
 userSchema.methods.generateAuthToken = function () {
   const token = jwt.sign(
@@ -73,7 +81,8 @@ userSchema.methods.generateAuthToken = function () {
       role: this.role,
       password: this.password,
       zone: this.zone,
-      lga: this.lga
+      lga: this.lga,
+      operation: this.operation
     },
     process.env.JWT,
     {
