@@ -102,6 +102,10 @@ exports.validateAccount = (req) => {
       .min(2)
       .max(1024)
       .required(),
+    accountName: Joi.string()
+      .min(0)
+      .max(1024)
+      .optional(),
 
   })
   return schema.validate(req);

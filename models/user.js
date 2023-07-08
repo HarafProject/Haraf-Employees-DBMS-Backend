@@ -82,7 +82,7 @@ userSchema.methods.generateAuthToken = function () {
       password: this.password,
       zone: this.zone,
       lga: this.lga,
-      operation: this.operation
+      operations: this.operations
     },
     process.env.JWT,
     {

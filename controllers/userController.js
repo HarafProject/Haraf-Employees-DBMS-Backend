@@ -46,7 +46,8 @@ exports.registerUser = async (req, res) => {
 
 //*************************User login******************
 exports.loginUser = async (req, res) => {
-  let user = await User.findOne({ email: req.body.email });
+  let user = await User.findOne({ email: req.body.email })
+    .exec()
   if (!user) return res.status(400).json({ error: 'Invalid Credentials.' });
   const validPassword = await bcrypt.compare(req.body.password, user.password);
   if (!validPassword) return res.status(422).json({ error: 'Invalid credentials' });
@@ -54,11 +55,21 @@ exports.loginUser = async (req, res) => {
   if (!user.isVerified) return res.status(StatusCodes.UNAUTHORIZED).json({ error: 'Un-Authorized action. You have not been granted access yet. please contact admin.' });
 
   const token = user.generateAuthToken();
+  user = {
+    firstname: user.firstname,
+    surname: user.surname,
+    email: user.email,
+    role: user.role,
+    zone: user.zone,
+    lga: user.lga,
+    operation: user.operations,
+  }
 
   res.status(StatusCodes.OK).json({
     status: "Success",
     message: "User Login Successfull",
-    token,
+    user,
+    token
   });
 
 }
@@ -186,9 +197,9 @@ exports.editProfile = async (req, res) => {
     surname,
     email,
     phone
-  },{ new: true })
-  .select("firstname email phone surname")
-  .exec()
+  }, { new: true })
+    .select("firstname email phone surname")
+    .exec()
 
   res.status(StatusCodes.OK).json({
     status: "success",

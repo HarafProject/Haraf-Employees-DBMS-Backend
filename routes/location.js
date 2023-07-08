@@ -19,7 +19,7 @@ locationRoutes.get('/lga/:zone_id', locationController.lgasByZone);
 
 locationRoutes.post('/ward', locationController.addWard);
 locationRoutes.post('/ward/list', locationController.addWardList);
-locationRoutes.get('/lga/:lga_id', locationController.wardsByLGA);
+locationRoutes.get('/ward/:lga_id', locationController.wardsByLGA);
 
 
 module.exports = locationRoutes;
