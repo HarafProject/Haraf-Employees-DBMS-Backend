@@ -56,9 +56,6 @@ exports.validateUser = (req) => {
       gender: Joi.string().min(2).max(250),
     });
     return schema.validate(req);
-  };
-  });
-  return schema.validate(req);
 };
 
 exports.validateAccount = (req) => {

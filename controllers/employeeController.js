@@ -35,9 +35,17 @@ exports.addEmployee = async (req, res) => {
 };
 
 exports.getEmployee = async (req, res) => {
-    const employee = await Employee.find();
+  try {
+    const employees = await Employee.find();
     return res.status(StatusCodes.OK).json({
       success: true,
-      employee
+      employees
     });
-  };
+  } catch (error) {
+    console.error(error);
+    return res.status(StatusCodes.SERVER_ERROR).json({
+      success: false,
+      error: 'Internal Server Error'
+    });
+  }
+};
