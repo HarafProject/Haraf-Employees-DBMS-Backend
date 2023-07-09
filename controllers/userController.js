@@ -5,7 +5,8 @@ const bcrypt = require("bcrypt");
 const otpGenerator = require("otp-generator");
 const { Otp_ForgotPassword } = require("../utils/sendMail")
 const generateUniqueId = require('generate-unique-id');
-
+const ErrorResponse = require('../utils/errorResponse');
+const asyncHandler = require('../middleware/async');
 exports.registerUser = async (req, res) => {
   let user = await User.findOne({ email: req.body.email });
 
@@ -178,6 +179,37 @@ exports.getUser = async (req, res) => {
     .populate("lga", "_id name");
   res.status(StatusCodes.OK).json(user);
 }
+// **************** Get all Users only admin and super-admin*******************
+exports.getUsers = async (req, res) => {
+  const user = await User.find()
+    .select("-password -resetPassword -resendOTP")
+    .populate("zone", "_id name")
+    .populate("lga", "_id name");
+  res.status(StatusCodes.OK).json({
+    success: true,
+   data: user});
+}
+
+//**********************************Update User **********************/
+
+exports.updateSupervisor = asyncHandler(async (req, res, next) => {
+  let user = await User.findById(req.params.id);
+
+  if (!user) {
+    return next(
+      new ErrorResponse(`Supervisor not found with id of ${req.params.id}`, 404)
+    );
+  }
+
+  user = await User.findOneAndUpdate({ _id: req.params.id }, req.body, {
+    new: true,
+    runValidators: true
+  });
+
+  res.status(200).json({ 
+    success: true,
+     message: "Account Updated" });
+});
 
 exports.editProfile = async (req, res) => {
   const { firstname, surname, email, phone } = req.body
@@ -195,4 +227,4 @@ exports.editProfile = async (req, res) => {
     message: "Profile updated succesfully",
     user
   });
-}
+};
