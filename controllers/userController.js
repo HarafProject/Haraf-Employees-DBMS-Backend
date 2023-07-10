@@ -58,6 +58,7 @@ exports.loginUser = async (req, res) => {
   user = {
     firstname: user.firstname,
     surname: user.surname,
+    phone:user.phone,
     email: user.email,
     role: user.role,
     zone: user.zone,
@@ -191,14 +192,13 @@ exports.getUser = async (req, res) => {
 }
 
 exports.editProfile = async (req, res) => {
-  const { firstname, surname, email, phone } = req.body
+  const { firstname, surname, phone } = req.body
   const user = await User.findByIdAndUpdate(req.user._id, {
     firstname,
     surname,
-    email,
     phone
   }, { new: true })
-    .select("firstname email phone surname")
+    .select("firstname email phone surname email role zone lga operations")
     .exec()
 
   res.status(StatusCodes.OK).json({

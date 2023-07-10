@@ -83,6 +83,8 @@ exports.addEmployee = async (req, res) => {
 
         const result = await cloudinary.uploader.upload(req.file.path);
         employee.photo = result.secure_url
+        employee.zone = req.user.zone
+        employee.lga = req.user.lga
 
         employee = await employee.save();
     }
@@ -135,7 +137,7 @@ exports.delete_employee_request = async (req, res) => {
 
     res.status(StatusCodes.OK).json({
         status: "success",
-        message: "Request Sent successfully"
+        message: "Request Sent successfully. Please await admin approval."
 
     });
 }
@@ -153,7 +155,7 @@ exports.edit_employee_request = async (req, res) => {
 
     res.status(StatusCodes.OK).json({
         status: "success",
-        message: "Request Sent successfully"
+        message: "Request Sent successfully.Please await admin approval."
 
     });
 }
@@ -180,7 +182,7 @@ exports.submit_attendance = async (req, res) => {
 
     })
     let record = []
-    
+
     attendanceRecord.forEach(async (item) => {
         let employeeRecord = new AttendanceRecord({
             _id: new mongoose.Types.ObjectId(),

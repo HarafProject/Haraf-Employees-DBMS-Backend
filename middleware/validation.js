@@ -47,7 +47,6 @@ exports.validateEditUser = (req) => {
       .pattern(new RegExp(/[1-9]\d{1,14}$/))
       .message('Please enter a valid phone number in international format')
       .required(),
-    email: Joi.string().email().min(5).max(255).required(),
 
   });
   return schema.validate(req);
@@ -60,16 +59,15 @@ exports.validateEmployee = (req) => {
     phone: Joi.string().min(11)
       .message('Please enter a valid phone number')
       .required(),
-    accountNumber: Joi.string().pattern(/^\d{10}$/)
-      .message('Please enter a valid bank account number')
+    accountNumber: Joi.string()
+      .pattern(/^\d{10}$/)
+      .message('Please enter a valid bank account number.')
       .required(),
+      bankCode: Joi.string()
+      .min(0)
+      .optional(),
     bankName: Joi.string().min(2).max(250).required(),
-    zone: Joi.string().regex(/^[0-9a-fA-F]{24}$/)
-      .message('Please enter a valid Zone ID')
-      .required(),
-    lga: Joi.string().regex(/^[0-9a-fA-F]{24}$/)
-      .message('Please enter a valid lga ID')
-      .required(),
+
     ward: Joi.string().regex(/^[0-9a-fA-F]{24}$/)
       .message('Please enter a valid Ward ID')
       .required(),
@@ -102,7 +100,7 @@ exports.validateAccount = (req) => {
       .min(2)
       .max(1024)
       .required(),
-    accountName: Joi.string()
+    fullName: Joi.string()
       .min(0)
       .max(1024)
       .optional(),
