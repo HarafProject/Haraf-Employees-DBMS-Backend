@@ -239,7 +239,6 @@ exports.addLGAList = async (req, res) => {
     });
 }
 
-
 exports.lgas = async (req, res) => {
 
     const lgas = await LGA.find().sort({ name: "asc" }).populate('zone', '_id name').exec();
@@ -250,6 +249,8 @@ exports.lgas = async (req, res) => {
     });
 
 }
+
+
 exports.lgasByZone = async (req, res) => {
 
     const lgas = await LGA.find({ zone: req.params.zone_id }).sort({ name: "asc" }).populate('zone', '_id name').exec();
