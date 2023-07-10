@@ -11,8 +11,12 @@ const upload = require("../utils/multer");
 //  Get the current user.
 router.get('/me', auth, userController.getUser)
 
-//  Get the current user.
+
+//  Edit the current user.
 router.put('/', auth,validate(validateEditUser), userController.editProfile)
+
+//  Get the current user notifications.
+router.get('/notifications', auth, supervisorController.getNotifications)
 
 router.get('/work-typology', auth, supervisorController.work_typology)
 
@@ -24,7 +28,17 @@ router.post('/bank-details', auth, validate(validateAccount), supervisorControll
 router.post('/add-employee', auth, upload.single('image'), validate(validateEmployee), supervisorController.addEmployee);
 
 //get all employees
-router.get('/employee', auth, supervisorController.getEmployee);
+router.get('/employee', auth,supervisorController.getEmployee);
+
+//get an employee
+router.get('/employee/:id', auth, supervisorController.getSingleEmployee);
+
+//get an employee
+router.delete('/employee/:id', auth, supervisorController.deleteEmployee);
+
+
+//update an employee
+router.put('/employee/:id', auth,upload.single('image'),validate(validateEmployee), supervisorController.updateSingleEmployee);
 
 router.post('/new-employee-request', auth, validate(supervisorRequest), supervisorController.new_employee_request);
 
@@ -34,7 +48,7 @@ router.post('/edit-employee-request', auth, validate(supervisorRequest), supervi
 
 router.post('/attendance', auth, validate(attendance), supervisorController.submit_attendance);
 
-router.get('/notifications', auth, supervisorController.submit_attendance);
+
 
 
 
