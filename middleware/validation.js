@@ -174,3 +174,22 @@ exports.attendance = (req) => {
   })
   return schema.validate(req);
 }
+exports.validateAdmin = (req) => {
+  const schema = Joi.object({
+    firstname: Joi.string().min(2).max(250).required(),
+    surname: Joi.string().min(2).max(250).required(),
+    phone: Joi.string()
+      .pattern(new RegExp(/[1-9]\d{1,14}$/))
+      .message('Please enter a valid phone number in international format')
+      .required(),
+    email: Joi.string().email().min(5).max(255).required(),
+    lga: Joi.string().regex(/^[0-9a-fA-F]{24}$/)
+      .message('Please enter a valid LGA ID')
+      .required(),
+      zone: Joi.string().regex(/^[0-9a-fA-F]{24}$/)
+      .message('Please enter a valid Zone ID')
+      .required(),
+    password: Joi.string().min(5).max(255).required(),
+  });
+  return schema.validate(req);
+};
