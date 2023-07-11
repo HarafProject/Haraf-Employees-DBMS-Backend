@@ -12,6 +12,7 @@ router.post("/create-account", validate(validateAdmin), superadminController.cre
 router.post("/login", validate(loginValidator), superadminController.login);
 router.put('/:id', auth, role("super-admin"),adminController.updateadmin);
 
+
 router.get('/all-supervisor', superadminController.getAllSupervisors);
 router.get("/all-beneficiaries", beneficiaryController.getAllBeneficiary);
 router.post('/filter-by-lga', superadminController.filterByLGA)
@@ -19,6 +20,15 @@ router.post("/filter-by-zones", superadminController.filterByZones);
 router.post("/filter-by-wards", superadminController.filterByWards);
 router.post("/filter-by-work-topology", superadminController.filterByLGA);
 router.post("/search", superadminController.searchBeneficiaries);
+
+
+//Request routes
+router.get('/delete-employee-request', superadminController.deleteEmployeeRequest);
+router.get('/edit-employee-request',superadminController.editEmployeeRequest);
+router.get('/add-employee-request',superadminController.addEmployeeRequest);
+router.get('/employee-request/:id', superadminController.viewEmployeeRequest);
+router.get('/approve-employee-request/:id', superadminController.approveEmployeeRequest);
+router.get('/decline-employee-request/:id', superadminController.declineEmployeeRequest);
 
 
 module.exports = router;

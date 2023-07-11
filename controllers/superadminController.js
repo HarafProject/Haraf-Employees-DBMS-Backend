@@ -162,7 +162,7 @@ exports.filterByWards = async(req, res) => {
   });
 };
 
-exports.filterBy = async (req, res) => {
+exports.filterByWards = async (req, res) => {
   const targetward = req.body.ward;
 
   if (!targetward) {
@@ -208,17 +208,164 @@ exports.searchBeneficiaries = async(req, res) => {
 };
 
 
-
-
-exports.getBene = async (req, res) => {
+exports.editEmployeeRequest = async (req, res) => {
   try {
-     
-    const bene = await Employee.find();
-    res.json({
-      data: bene,
+    const data = SupervisorRequest.find({ type: "edit-employee" }).exec();;
+    res.status(StatusCodes.OK).json({
+      success: true,
+      message: "Edit  Beneficary Request",
+      data,
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(StatusCodes.SERVER_ERROR).json({
+      status: "error",
+      error: error.message,
+    });
   }
 };
+
+exports.addEmployeeRequest = async (req, res) => {
+  try {
+    const data = SupervisorRequest.find({ type: "new-employee" }).exec();
+    res.status(StatusCodes.OK).json({
+      success: true,
+      message: "Add  Beneficary Request",
+      data,
+    });
+  } catch (error) {
+    res.status(StatusCodes.SERVER_ERROR).json({
+      status: "error",
+      error: error.message,
+    });
+  }
+};
+
+exports.viewEmployeeRequest = async (req,res)=>{
+ try {
+   const requestId = req.params.id;
+
+   const data = await SupervisorRequest.findById(requestId);
+
+   if (!data) {
+     return res.status(404).json({ message: "Record not found!" });
+   } else {
+     res.status(200).json({
+       success: true,
+       data,
+     });
+   }
+ } catch (err) {
+   res.status(500).json({
+     success: false,
+     message: "An error occured",
+     error: err.message,
+   });
+ }
+};
+
+exports.deleteEmployeeRequest = async (req, res) => {
+  try {
+    const data = await SupervisorRequest.find({
+      type: "delete-employee",
+    }).exec();
+    res.status(StatusCodes.OK).json({
+      success: true,
+      message: "Beneficiary delete Request",
+      data,
+    });
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      status: "error",
+      message: "Failed to retrieve the list of beneficiaries",
+      error: error.message,
+    });
+  }
+};
+
+exports.approveEmployeeRequest = async(req,res)=>{
+   const requestId = req.params.id; 
+
+  try {
+    const request = await SupervisorRequest.findById(requestId);
+
+    if (!request) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        message: "Request not found",
+      });
+    }
+
+    if (request.status === "approved" || request.status === "declined") {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "Request has already been processed",
+      });
+    }
+
+   
+    
+      request.status = "approved";
+
+    await request.save();
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      message: "Request has been processed",
+      data: request,
+    });
+  } catch (error) {
+
+ res.status(StatusCodes.SERVER_ERROR).json({
+   success: false,
+   message: "Failed to process the request",
+   error: error.message,
+ });
+
+  }
+}
+
+exports.declineEmployeeRequest = async (req,res)=>{
+
+   const requestId = req.params.id;
+
+   try {
+     const request = await SupervisorRequest.findById(requestId);
+
+     if (!request) {
+       return res.status(StatusCodes.NOT_FOUND).json({
+         success: false,
+         message: "Request not found",
+       });
+     }
+
+     if (request.status === "declined") {
+       return res.status(StatusCodes.BAD_REQUEST).json({
+         success: false,
+         message: "Request has already been processed",
+       });
+     }
+
+     request.status = "declined";
+
+     await request.save();
+
+     res.status(StatusCodes.OK).json({
+       success: true,
+       message: "Request has been declined successfully",
+       data: request,
+     });
+   } catch (error) {
+     res.status(StatusCodes.SERVER_ERROR).json({
+       success: false,
+       message: "Failed to process the request",
+       error: error.message,
+     });
+   }
+
+}
+
+
+
+exports.redoEmployeeAction = async (req,res)=>{
+
+}
