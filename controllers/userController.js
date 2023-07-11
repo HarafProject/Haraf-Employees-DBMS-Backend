@@ -1,4 +1,4 @@
-const { User } = require("../models/user");
+const  User  = require("../models/user");
 const OTP = require("../models/OTP");
 const StatusCodes = require("../utils/status-codes");
 const bcrypt = require("bcrypt");
