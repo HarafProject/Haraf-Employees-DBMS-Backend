@@ -1,6 +1,6 @@
 const StatusCodes = require("../utils/status-codes");
 const { SuperAdmin } = require("../models/superadmin");
-const Supervisor = require("../models/user");
+const Users = require("../models/user");
 const Zone = require('../models/zone');
 const Employee = require('../models/employee');
 const SupervisorRequest = require('../models/supervisorRequest');
@@ -54,7 +54,8 @@ exports.login = async (req, res) => {
     //*************************Get all Supervisors******************
   exports.getAllSupervisors = async (req, res) => {
     try {
-      const data = await Supervisor.find();
+      const data = await Users.find({ role: "admin" }, { password: 0 });
+      
       res.status(StatusCodes.OK).json({
         success: true,
         message: "List of all supervisors",
@@ -69,18 +70,10 @@ exports.login = async (req, res) => {
     }
   };
 
-  exports.getReportsReceived = async(req,res)=>{
-    try{
-     
-    }
-    catch(error){
-
-    }
-  }
 
    exports.getLGASupervisors = async (req, res) => {
      try {
-      const data = await  User.find();
+      const data = await User.find({ role: "supervisor" });
       res.status(StatusCodes.OK).json({
         success: true,
         message: "List of all LGA supervisors",
@@ -102,21 +95,24 @@ exports.login = async (req, res) => {
 // }
 
 
-exports.filterByLGA = (req, res) => {
+exports.filterByLGA = async (req, res) => {
   const targetLGA = req.body.lga; 
 
   if (!targetLGA) {
     return res.status(400).json({ error: 'Missing LGA parameter' });
   }
+const data = await Employee.find();
 
-  const filteredBeneficiaries = Employee.filter((employee) => {
-    return employee.lga.toLowerCase() === targetLGA.toLowerCase();
+ 
+
+  const filteredBeneficiaries = data.filter((employee) => {
+  return employee.lga === targetLGA;
   });
 
   res.status(StatusCodes.OK).json({
-   success:true,
-   message:'Filter by LGA',
-   data: filtered
+    success: true,
+    message: "Filter by LGA",
+    data: filteredBeneficiaries,
   });
 };
 
@@ -124,43 +120,69 @@ exports.filterByLGA = (req, res) => {
 
 
 
-exports.filterByZones = (req, res) => {
+exports.filterByZones = async(req, res) => {
   const targetZone = req.body.zone;
 
   if (!targetZone) {
     return res.status(400).json({ error: "Missing Zone parameter" });
   }
 
-  const filteredBeneficiaries = Employee.filter((employee) => {
-    return employee.zone.toLowerCase() === targetZone.toLowerCase();
+ const data = await Employee.find();
+
+ 
+
+  const filteredBeneficiaries = data.filter((employee) => {
+  return employee.zone === targetZone;
   });
 
   res.status(StatusCodes.OK).json({
     success: true,
     message: "Filtered  by Zone",
-    data: filtered,
+    data: filteredBeneficiaries,
   });
 };
 
-exports.filterByWards = (req, res) => {
+exports.filterByWards = async(req, res) => {
   const targetward = req.body.ward;
 
   if (!targetward) {
     return res.status(400).json({ error: "Missing ward parameter" });
   }
 
-  const filteredBeneficiaries = Employee.filter((employee) => {
-    return employee.ward.toLowerCase() === targetward.toLowerCase();
+ const data = await Employee.find();
+
+  const filteredBeneficiaries = data.filter((employee) => {
+  return employee.ward === targetward;
   });
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: "Filtered  by Zone",
-    data: filtered,
+    message: "Filtered  by ward",
+    data: filteredBeneficiaries,
   });
 };
 
-exports.searchBeneficiaries = (req, res) => {
+exports.filterBy = async (req, res) => {
+  const targetward = req.body.ward;
+
+  if (!targetward) {
+    return res.status(400).json({ error: "Missing ward parameter" });
+  }
+
+  const data = await Employee.find();
+
+  const filteredBeneficiaries = data.filter((employee) => {
+    return employee.ward === targetward;
+  });
+
+  res.status(StatusCodes.OK).json({
+    success: true,
+    message: "Filtered  by ward",
+    data: filteredBeneficiaries,
+  });
+};
+
+exports.searchBeneficiaries = async(req, res) => {
   const searchQuery = req.body.searchParams; 
 
 
@@ -168,11 +190,15 @@ exports.searchBeneficiaries = (req, res) => {
     return res.status(400).json({ error: "Missing search query parameter" });
   }
 
-  const searchResults = Employee.filter((beneficiary) => {
-    const beneficiaryName = beneficiary.fullName.toLowerCase();
-    const query = searchQuery.toLowerCase();
+   const data = await Employee.find();
+
+  const searchResults = data.filter((beneficiary) => {
+    const beneficiaryName = beneficiary.fullName;
+
+    const query = this.searchQuery;
     return beneficiaryName.includes(query);
   });
+
 
   res.status(StatusCodes.OK).json({
     success: true,
@@ -182,6 +208,17 @@ exports.searchBeneficiaries = (req, res) => {
 };
 
 
-exports.getEmployeeDeleteRequest = async(req,res)=>{
-  request = SupervisorRequest.find({ type: "delete-employee" });
-}
+
+
+exports.getBene = async (req, res) => {
+  try {
+     
+    const bene = await Employee.find();
+    res.json({
+      data: bene,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
