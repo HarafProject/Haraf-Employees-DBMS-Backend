@@ -13,6 +13,7 @@ router.get('/me',  userController.getUser)
 router.post('/work-typology', auth,role(["admin","super-admin"]), adminController.work_typology);
 router.get('/supervisors', auth, role(["admin","super-admin"]), userController.getUsers);
 router.put('/supervisor/:id', auth, role(["admin", "super-admin"]),userController.updateSupervisor);
+router.put('/handle-request/:id', auth, role(["admin", "super-admin"]),adminController.handleSupervisorRequest);
 //Create Admin
 router.post("/create-admin", validate(validateAdmin), adminController.createAdmin);
 router.post("/login", validate(loginValidator), adminController.login);

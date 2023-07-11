@@ -7,7 +7,26 @@ const Request = require("../models/supervisorRequest")
 const Attendance = require("../models/attendance")
 const AttendanceRecord = require("../models/attendanceRecord")
 const cloudinary = require("../utils/cloudinary");
+const SupervisorNotification = require("../models/notifySupervisor")
 
+exports.getNotifications = async (req, res) => {
+    const notifications = await SupervisorNotification.find({ supervisor: req.user._id })
+        .sort({ createdAt: -1 })
+        .populate({
+            path: 'request',
+            populate: {
+                path: 'employee',
+                model: 'Employee',
+                select: "fullName"
+            }
+        })
+        .exec()
+
+    res.status(StatusCodes.OK).json({
+        status: "success",
+        notifications
+    });
+}
 exports.bank_details = async (req, res) => {
     const { accountNumber, bankCode, bankName } = req.body;
 
@@ -58,7 +77,11 @@ exports.work_typology = async (req, res) => {
 
 exports.addEmployee = async (req, res) => {
 
-    let employee = await Employee.findOne({ phone: req.body.phone });
+    let employee = await Employee.findOne({
+        $or: [
+            { accountNumber: req.body.accountNumber },
+            { phone: req.body.phone }
+        ]});
     if (employee) return res.status(StatusCodes.BAD_REQUEST).json({ error: "Employee already exist. Please contact Admin" });
     // If employee does not exist, add
     if (!employee) {
@@ -107,13 +130,69 @@ exports.getEmployee = async (req, res) => {
     });
 };
 
+exports.getSingleEmployee = async (req, res) => {
+    const employee = await Employee.findById(req.params.id)
+        .populate("workTypology", "name")
+        .populate("zone", "name")
+        .populate("lga", "name")
+        .populate("ward", "name");
+    return res.status(StatusCodes.OK).json({
+        success: true,
+        employee
+    });
+};
+
+exports.deleteEmployee = async (req, res) => {
+    const { notification } = req.query
+
+    await Employee.softDeleteOne({ _id: req.params.id })
+    const a = await SupervisorNotification.findByIdAndUpdate(notification, {
+        $set: {
+            actionTaken: true
+        }
+    })
+    return res.status(StatusCodes.CREATED).json({
+        status: 'success',
+        message: "Beneficiary account have been deleted successfully.",
+    });
+};
+
+exports.updateSingleEmployee = async (req, res) => {
+    const { notification } = req.query
+    console.log(notification)
+
+    if (req.file) {
+        const result = await cloudinary.uploader.upload(req.file.path);
+        req.body.photo = result.secure_url
+    }
+
+    const updatedEmployee = await Employee.findByIdAndUpdate(req.params.id, req.body, {
+        new: true
+    })
+        .populate("ward")
+        .populate("workTypology")
+        .exec()
+    const a = await SupervisorNotification.findByIdAndUpdate(notification, {
+        $set: {
+            actionTaken: true
+        }
+    })
+    return res.status(StatusCodes.OK).json({
+        success: true,
+        message: "Employee details updated successfully.",
+        updatedEmployee
+    });
+
+
+};
+
 exports.new_employee_request = async (req, res) => {
 
     const { reason } = req.body
     const newRequest = new Request({
         user: req.user._id,
         reason,
-        type: "new-employee"
+        type: "add-employee"
     })
     await newRequest.save()
 
@@ -145,6 +224,8 @@ exports.delete_employee_request = async (req, res) => {
 exports.edit_employee_request = async (req, res) => {
 
     const { reason, employeeId } = req.body
+    if (!employeeId || !reason) return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({ error: "All data are required" })
+
     const newRequest = new Request({
         user: req.user._id,
         reason,

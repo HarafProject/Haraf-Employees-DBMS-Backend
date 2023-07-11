@@ -1,4 +1,16 @@
 const mongoose = require("mongoose");
+const { SoftDelete } = require("soft-delete-mongoose-plugin");
+
+// defind soft delete field name
+const IS_DELETED_FIELD = "isDeleted";
+const DELETED_AT_FIELD = "deletedAt";
+
+// use soft delete plugin
+mongoose.plugin(new SoftDelete({
+  isDeletedField: IS_DELETED_FIELD,
+  deletedAtField: DELETED_AT_FIELD,
+}).getPlugin());
+
 const EmployeeSchema = new mongoose.Schema({
   fullName: {
     type: String,
@@ -56,6 +68,8 @@ const EmployeeSchema = new mongoose.Schema({
     type: String,
     default: "https://res.cloudinary.com/jossyjoe/image/upload/v1606258324/UserIcon_tmu1v6.jpg"
   },
+  isDeleted: { type: Boolean, default: false },
+  deletedAt: { type: Date, default: null },
 
 });
 module.exports = mongoose.model('Employee', EmployeeSchema);

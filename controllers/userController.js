@@ -1,4 +1,4 @@
-const { User } = require("../models/user");
+const  User  = require("../models/user");
 const OTP = require("../models/OTP");
 const StatusCodes = require("../utils/status-codes");
 const bcrypt = require("bcrypt");
@@ -7,6 +7,7 @@ const { Otp_ForgotPassword } = require("../utils/sendMail")
 const generateUniqueId = require('generate-unique-id');
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
+
 exports.registerUser = async (req, res) => {
   let user = await User.findOne({ email: req.body.email });
 
@@ -59,7 +60,7 @@ exports.loginUser = async (req, res) => {
   user = {
     firstname: user.firstname,
     surname: user.surname,
-    phone:user.phone,
+    phone: user.phone,
     email: user.email,
     role: user.role,
     zone: user.zone,
@@ -193,13 +194,14 @@ exports.getUser = async (req, res) => {
 }
 // **************** Get all Users only admin and super-admin*******************
 exports.getUsers = async (req, res) => {
-  const user = await User.find()
+  const users = await User.find({ role: "supervisor" })
     .select("-password -resetPassword -resendOTP")
     .populate("zone", "_id name")
     .populate("lga", "_id name");
   res.status(StatusCodes.OK).json({
     success: true,
-   data: user});
+    data: users
+  });
 }
 
 //**********************************Update User **********************/
@@ -218,9 +220,10 @@ exports.updateSupervisor = asyncHandler(async (req, res, next) => {
     runValidators: true
   });
 
-  res.status(200).json({ 
+  res.status(200).json({
     success: true,
-     message: "Account Updated" });
+    message: "Account Updated"
+  });
 });
 
 exports.editProfile = async (req, res) => {
@@ -239,3 +242,5 @@ exports.editProfile = async (req, res) => {
     user
   });
 };
+
+
