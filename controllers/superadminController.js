@@ -3,6 +3,8 @@ const { SuperAdmin } = require("../models/superadmin");
 const Supervisor = require("../models/user");
 const Zone = require('../models/zone');
 const Employee = require('../models/employee');
+const SupervisorRequest = require('../models/supervisorRequest');
+
 
 const bcrypt = require("bcrypt");
 const { search } = require("../routes/superadmin");
@@ -178,3 +180,8 @@ exports.searchBeneficiaries = (req, res) => {
     beneficiaries: searchResults,
   });
 };
+
+
+exports.getEmployeeDeleteRequest = async(req,res)=>{
+  request = SupervisorRequest.find({ type: "delete-employee" });
+}
