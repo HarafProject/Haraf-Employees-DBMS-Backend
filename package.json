@@ -16,8 +16,9 @@
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.0",
-    "cors": "^2.8.5",
+    "body-parser": "^1.20.2",
     "cloudinary": "^1.27.0",
+    "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "express-async-errors": "^3.1.1",
@@ -30,9 +31,9 @@
     "morgan": "^1.10.0",
     "multer": "^1.4.3",
     "nodemailer": "^6.7.8",
+    "otp-generator": "^4.0.0",
     "paystack": "^2.0.1",
     "paystack-api": "^2.0.6",
-    "otp-generator": "^4.0.0",
     "winston": "^2.4.0",
     "winston-mongodb": "^3.0.0"
   },
