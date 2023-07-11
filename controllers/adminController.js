@@ -8,6 +8,9 @@ const asyncHandler = require('../middleware/async');
 const SupervisorRequest = require("../models/supervisorRequest");
 const SupervisorNotification = require("../models/notifySupervisor")
 const { Supervisor_Notification } = require("../utils/sendMail")
+const Supervisor = require('../models/user');
+
+
 
 exports.work_typology = async (req, res) => {
   const { name } = req.body;
@@ -24,18 +27,19 @@ exports.work_typology = async (req, res) => {
     status: "success",
     message: "Work Typolgy Updated succesfully.",
 
-  });
+    });
+
 };
 
-// Create Admin
-exports.createAdmin = async (req, res) => {
-  let admin = await Admin.findOne({ email: req.body.email });
-
-  if (admin) return res.status(StatusCodes.BAD_REQUEST).json({ error: "User already exist. Please contact Super Admin" });
-
-  // If admin does not exist, create
-  if (!admin) {
-    //generate order id
+  // Create Admin
+  exports.createAdmin = async (req, res) => {
+    let admin = await Admin.findOne({ email: req.body.email });
+  
+    if (admin) return res.status(StatusCodes.BAD_REQUEST).json({ error: "User already exist. Please contact Super Admin" });
+   
+    // If admin does not exist, create
+    if (!admin) {
+         //generate order id
     let userID = generateUniqueId({
       length: 10,
       useLetters: false

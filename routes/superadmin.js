@@ -9,4 +9,12 @@ const role = require("../middleware/role")
 router.post("/create-account", validate(validateAdmin), superadminController.createSuperAdmin);
 router.post("/login", validate(loginValidator), superadminController.login);
 router.put('/:id', auth, role("super-admin"),adminController.updateadmin);
+
+router.get('/all-supervisor', superadminController.getAllSupervisors);
+router.post('/filter-by-lga', superadminController.filterByLGA)
+router.post('/filter-by-zones', superadminController.filterByLGA)
+router.post("/filter-by-wards", superadminController.filterByLGA);
+router.post("/filter-by-work-topology", superadminController.filterByLGA);
+router.post("/search", superadminController.searchBeneficiaries);
+
 module.exports = router;
