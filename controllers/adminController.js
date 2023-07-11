@@ -5,6 +5,10 @@ const bcrypt = require("bcrypt");
 const generateUniqueId = require('generate-unique-id');
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
+const Supervisor = require('../models/user');
+
+
+
 exports.work_typology = async (req, res) => {
     const { name } = req.body;
 
@@ -21,8 +25,9 @@ exports.work_typology = async (req, res) => {
         message: "Work Typolgy Updated succesfully.",
 
     });
+
 };
-  
+
   // Create Admin
   exports.createAdmin = async (req, res) => {
     let admin = await Admin.findOne({ email: req.body.email });
@@ -101,3 +106,10 @@ exports.updateadmin = asyncHandler(async (req, res, next) => {
         success: true, 
         message: "Account Updated"});
   });
+
+
+
+
+  
+
+exports.get
