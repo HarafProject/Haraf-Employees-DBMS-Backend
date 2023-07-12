@@ -1,4 +1,4 @@
-const  User  = require("../models/user");
+const User = require("../models/user");
 const OTP = require("../models/OTP");
 const StatusCodes = require("../utils/status-codes");
 const bcrypt = require("bcrypt");
@@ -7,6 +7,7 @@ const { Otp_ForgotPassword } = require("../utils/sendMail")
 const generateUniqueId = require('generate-unique-id');
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
+const Ward = require("../models/ward");
 
 exports.registerUser = async (req, res) => {
   let user = await User.findOne({ email: req.body.email });
@@ -57,7 +58,9 @@ exports.loginUser = async (req, res) => {
   if (!user.isVerified) return res.status(StatusCodes.UNAUTHORIZED).json({ error: 'Un-Authorized action. You have not been granted access yet. please contact admin.' });
 
   const token = user.generateAuthToken();
+  const wards = await Ward.find({ lga: user.lga }).sort({ name: "asc" }).populate('lga', '_id name').exec();
   user = {
+    _id: user._id,
     firstname: user.firstname,
     surname: user.surname,
     phone: user.phone,
@@ -72,6 +75,7 @@ exports.loginUser = async (req, res) => {
     status: "Success",
     message: "User Login Successfull",
     user,
+    wards,
     token
   });
 

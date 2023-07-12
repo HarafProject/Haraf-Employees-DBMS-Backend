@@ -81,7 +81,8 @@ exports.addEmployee = async (req, res) => {
         $or: [
             { accountNumber: req.body.accountNumber },
             { phone: req.body.phone }
-        ]});
+        ]
+    });
     if (employee) return res.status(StatusCodes.BAD_REQUEST).json({ error: "Employee already exist. Please contact Admin" });
     // If employee does not exist, add
     if (!employee) {
@@ -120,6 +121,7 @@ exports.addEmployee = async (req, res) => {
 
 exports.getEmployee = async (req, res) => {
     const employees = await Employee.find({ lga: req.user.lga })
+        .sort({ createdAt: -1 })
         .populate("workTypology", "name")
         .populate("zone", "name")
         .populate("lga", "name")
@@ -248,7 +250,8 @@ exports.submit_attendance = async (req, res) => {
     // Check if attendance has already been submitted
     let attendance = await Attendance.findOne({
         lga,
-        date
+        date,
+        submittedBy: req.user._id
     })
     if (attendance) return res.status(StatusCodes.BAD_REQUEST).json({ error: "Attendance for this LGA has already been submitted." });
 
