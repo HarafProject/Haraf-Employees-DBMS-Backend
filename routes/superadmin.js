@@ -14,6 +14,7 @@ router.put('/:id', auth, role("super-admin"),adminController.updateadmin);
 
 
 router.get('/all-supervisor', superadminController.getAllSupervisors);
+router.get('/beneficiary-profile/:id', superadminController.getBneneficiaryProfile)
 router.get("/all-beneficiaries", beneficiaryController.getAllBeneficiary);
 router.post('/filter-by-lga', superadminController.filterByLGA)
 router.post("/filter-by-zones", superadminController.filterByZones);
@@ -29,6 +30,17 @@ router.get('/add-employee-request',superadminController.addEmployeeRequest);
 router.get('/employee-request/:id', superadminController.viewEmployeeRequest);
 router.get('/approve-employee-request/:id', superadminController.approveEmployeeRequest);
 router.get('/decline-employee-request/:id', superadminController.declineEmployeeRequest);
+
+//Attendance
+router.get('/beneficiary-attendance/:id',superadminController.fetchBeneficiaryAttendance);
+router.get('/beneficiary-present-attendance/:id',superadminController.fetchBeneficiaryPresentAttendance);
+router.get("/beneficiary-absent-attendance/:id",superadminController.fetchBeneficiaryAbsentAttendance
+);
+router.get("/attendance-details", superadminController.fetchAttendanceDetails);
+
+//Manage supervisors
+router.get("/list-of-admins-and-supervisors", superadminController.getSupervisorsAndAdmin);
+router.get("/filter-supervisors-by-zones/:id", superadminController.filterSupervisorByZone);
 
 
 module.exports = router;

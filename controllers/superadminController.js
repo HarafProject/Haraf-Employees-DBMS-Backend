@@ -1,9 +1,12 @@
 const StatusCodes = require("../utils/status-codes");
+const mongoose  = require('mongoose');
 const { SuperAdmin } = require("../models/superadmin");
 const Users = require("../models/user");
 const Zone = require('../models/zone');
 const Employee = require('../models/employee');
 const SupervisorRequest = require('../models/supervisorRequest');
+const Attendance = require('../models/attendanceRecord'); 
+const AllAttendance = require("../models/attendance");
 
 
 const bcrypt = require("bcrypt");
@@ -54,7 +57,7 @@ exports.login = async (req, res) => {
     //*************************Get all Supervisors******************
   exports.getAllSupervisors = async (req, res) => {
     try {
-      const data = await Users.find({ role: "admin" }, { password: 0 });
+      const data = await Users.find({ role: "supervisor" }, { password: 0 });
       
       res.status(StatusCodes.OK).json({
         success: true,
@@ -97,22 +100,20 @@ exports.login = async (req, res) => {
 
 exports.filterByLGA = async (req, res) => {
   const targetLGA = req.body.lga; 
+   const LgaId = mongoose.Types.ObjectId(targetLGA);
+
 
   if (!targetLGA) {
     return res.status(400).json({ error: 'Missing LGA parameter' });
   }
-const data = await Employee.find();
+const data = await Employee.find({ lga: LgaId });
 
- 
 
-  const filteredBeneficiaries = data.filter((employee) => {
-  return employee.lga === targetLGA;
-  });
 
   res.status(StatusCodes.OK).json({
     success: true,
     message: "Filter by LGA",
-    data: filteredBeneficiaries,
+    data,
   });
 };
 
@@ -122,65 +123,45 @@ const data = await Employee.find();
 
 exports.filterByZones = async(req, res) => {
   const targetZone = req.body.zone;
+  const zoneId = mongoose.Types.ObjectId(targetZone);
 
   if (!targetZone) {
     return res.status(400).json({ error: "Missing Zone parameter" });
   }
 
- const data = await Employee.find();
+ const data = await Employee.find({ zone: zoneId });
 
  
 
-  const filteredBeneficiaries = data.filter((employee) => {
-  return employee.zone === targetZone;
-  });
+
 
   res.status(StatusCodes.OK).json({
     success: true,
     message: "Filtered  by Zone",
-    data: filteredBeneficiaries,
+    data,
   });
 };
 
 exports.filterByWards = async(req, res) => {
   const targetward = req.body.ward;
 
-  if (!targetward) {
-    return res.status(400).json({ error: "Missing ward parameter" });
-  }
-
- const data = await Employee.find();
-
-  const filteredBeneficiaries = data.filter((employee) => {
-  return employee.ward === targetward;
-  });
-
-  res.status(StatusCodes.OK).json({
-    success: true,
-    message: "Filtered  by ward",
-    data: filteredBeneficiaries,
-  });
-};
-
-exports.filterByWards = async (req, res) => {
-  const targetward = req.body.ward;
+  const wardId = mongoose.Types.ObjectId(targetward);
 
   if (!targetward) {
     return res.status(400).json({ error: "Missing ward parameter" });
   }
 
-  const data = await Employee.find();
+ const data = await Employee.find({ ward: wardId });
 
-  const filteredBeneficiaries = data.filter((employee) => {
-    return employee.ward === targetward;
-  });
+
 
   res.status(StatusCodes.OK).json({
     success: true,
     message: "Filtered  by ward",
-    data: filteredBeneficiaries,
+    data,
   });
 };
+
 
 exports.searchBeneficiaries = async(req, res) => {
   const searchQuery = req.body.searchParams; 
@@ -365,7 +346,212 @@ exports.declineEmployeeRequest = async (req,res)=>{
 }
 
 
+exports.getBneneficiaryProfile = async(req,res) =>{
+  const requestId = req.params.id;
+   try {
+   
+     if (!requestId) {
+       return res.status(StatusCodes.NOT_FOUND).json({
+         success: false,
+         message: "Request not found",
+       });
+     }
+
+       const request = await SupervisorRequest.findById(requestId);
+
+     res.status(StatusCodes.OK).json({
+       success: true,
+       message: "Beneficiary profile",
+       data: request,
+     });
+   } catch (error) {
+     res.status(StatusCodes.SERVER_ERROR).json({
+       success: false,
+       message: "Failed to fetch beneficiary",
+       error: error.message,
+     });
+   }
+  
+}
+
 
 exports.redoEmployeeAction = async (req,res)=>{
 
 }
+
+
+
+
+exports.fetchBeneficiaryAttendance = async (req, res) => {
+  const beneficiaryId = req.params.id; 
+
+  try {
+    const attendance = await Attendance.find({ beneficiaryId });
+
+    if (attendance.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'No attendance records found for the beneficiary',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Beneficiary attendance fetched successfully',
+      data: attendance,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch beneficiary attendance',
+      error: error.message,
+    });
+  }
+};
+
+
+exports.fetchBeneficiaryPresentAttendance = async (req, res) => {
+  const beneficiaryId = req.params.id;
+
+  try {
+     const attendance = await Attendance.find({
+       beneficiaryId,
+       "attempt.status": "Present",
+     });
+
+    if (attendance.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No attendance records found for the beneficiary",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Beneficiary attendance fetched successfully",
+      data: attendance,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch beneficiary attendance",
+      error: error.message,
+    });
+  }
+};
+
+exports.fetchBeneficiaryAbsentAttendance = async (req, res) => {
+  const beneficiaryId = req.params.id;
+
+  try {
+    const attendance = await Attendance.find({
+      beneficiaryId,
+      "attempt.status": "Absent",
+    });
+
+    if (attendance.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No attendance records found for the beneficiary absent days",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Beneficiary attendance fetched successfully",
+      data: attendance,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch beneficiary attendance",
+      error: error.message,
+    });
+  }
+};
+
+
+
+
+exports.fetchAttendanceDetails = async (req, res) => {
+  try {
+    const attendanceDetails = await AllAttendance.find();
+
+    if (attendanceDetails.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No attendance records found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Attendance details fetched successfully",
+      data: attendanceDetails,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch attendance details",
+      error: error.message,
+    });
+  }
+};
+
+
+
+
+
+//Manage supervisors
+exports.getSupervisorsAndAdmin = async(req,res)=>{
+  try{
+const data = Users.find({ role: { $in: ["admin"] } }).exec();
+res.status(200).json({
+  success:true,
+  message:"Successful",
+  data:data,
+})
+
+  }
+  catch(error){
+res.status(500).json({
+  success:false,
+  message:"An error occured trying to fetch Admins and Supervisors",
+  err: error.message
+})
+  }
+};
+
+exports.filterSupervisorByZone = async(req, res) => {
+  const searchParam = req.params.id;
+  try {
+      if (!searchParam) {
+        return res.status(400).json({ error: "Missing Zone parameter" });
+      }
+
+    const data = Users()
+    const filteredData = data.filter(response =>{
+      response.zone === searchParam
+    })
+    
+    
+    res.status(200).json({
+      success: true,
+      message: "Successful",
+      filteredData,
+    });
+
+
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "An error occured trying to fetch Admins and Supervisors",
+      err: error.message,
+    });
+  }
+};
+
+
+
+//SuperAdmin profile
