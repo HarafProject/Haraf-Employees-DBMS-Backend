@@ -7,6 +7,7 @@ const Employee = require('../models/employee');
 const SupervisorRequest = require('../models/supervisorRequest');
 const Attendance = require('../models/attendanceRecord'); 
 const AllAttendance = require("../models/attendance");
+const Ward = require('../models/ward');
 
 
 const bcrypt = require("bcrypt");
@@ -73,6 +74,32 @@ exports.login = async (req, res) => {
     }
   };
 
+  exports.getAllWards = async(req,res)=>{
+    try{
+      const data = await Ward.find().exec();
+      if(!data){
+        res.status(404).json({
+          status: "error",
+          message: "No ward found",
+     
+        });
+      }
+
+
+      res.status(StatusCodes.SERVER_ERROR).json({
+        status: "success",
+        message: "List of all wards",
+        data,
+      });
+    }
+    catch(error){
+       res.status(StatusCodes.SERVER_ERROR).json({
+         status: "error",
+         message: "Failed to retrieve the list of wards",
+         error: error.message,
+       });
+    }
+  }
 
    exports.getLGASupervisors = async (req, res) => {
      try {
@@ -91,24 +118,150 @@ exports.login = async (req, res) => {
      }
    };
 
-//    exports.filterByZones(req, res) {
-//   const filteredZone = Zone.filter( zone =>)
-//    users.filter(user => user.age >= age);
-//   res.json(filteredUsers);
-// }
+
+exports.filterByTopology = async (req, res) => {
+  const targetTopology = req.body.topology; 
+   const topologyId = mongoose.Types.ObjectId(targetTopology);
+
+
+  if (!targetTopology) {
+    return res.status(400).json({ error: "Missing Topology parameter" });
+  }
+const data = await Employee.find({ workTypology: topologyId });
+
+
+
+  res.status(StatusCodes.OK).json({
+    success: true,
+    message: "Filter by work topology",
+    data,
+  });
+};
+
+
+
+
+exports.allZonesAttendanceReport = async(req,res)=>{
+  const attendance = await AllAttendance.find().exec();
+  try{
+  // console.log("attendance", attendance);
+
+  res.status(StatusCodes.OK).json({
+    success: true,
+    message: "All zones attendance",
+    data: attendance,
+  });
+  }
+  catch(error){
+    
+  res.status(500).json({
+    success: false,
+    message: "Error occured while feching attendance ",
+    err: error.message,
+  });
+  }
+}
+
+exports.zoneReport = async(req,res)=>{
+try{
+const report = req.body.zone;
+
+const reportId = mongoose.Types.ObjectId(report);
+
+if (!report) {
+  return res.status(400).json({ error: "Missing report parameter" });
+}
+const data = await AllAttendance.find({ zone: reportId });
+
+res.status(StatusCodes.OK).json({
+  success: true,
+  message: "Filter reports by zone",
+  data,
+});
+}
+catch(error){
+ res.status(StatusCodes.SERVER_ERROR).json({
+   status: "error",
+   message: "Failed to retrieve  attendance report",
+   error: error.message,
+ });
+}
+}
+
+
+exports.filterReportsByLGA = async (req, res) => {
+  try {
+    const report = req.body.lga;
+
+    const reportId = mongoose.Types.ObjectId(report);
+
+    if (!report) {
+      return res.status(400).json({ error: "Missing report parameter" });
+    }
+    const data = await AllAttendance.find({ lga: reportId });
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      message: "Filter reports by zone",
+      data,
+    });
+  } catch (error) {
+    res.status(StatusCodes.SERVER_ERROR).json({
+      status: "error",
+      message: "Failed to retrieve  attendance report",
+      error: error.message,
+    });
+  }
+};
+
+exports.filterAttendanceByDate = async (req, res) => {
+  const { date } = req.body;
+  reportId = date;
+  const data = await AllAttendance.find({ date: reportId });
+
+  if (!date) {
+    return res
+      .status(400)
+      .json({ error: "Missing  date parameters" });
+  }
+
+  try {
+    const data = await AllAttendance.find({
+      date:date
+    });
+
+   
+
+    res.status(200).json({
+      success: true,
+      message: "Filtered beneficiaries by date",
+      beneficiaries: data,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: "Internal Server Error",
+    });
+  }
+};
+
+
+
+
+
+//Attendance analytics
+
+
 
 
 exports.filterByLGA = async (req, res) => {
-  const targetLGA = req.body.lga; 
-   const LgaId = mongoose.Types.ObjectId(targetLGA);
-
+  const targetLGA = req.body.lga;
+  const LgaId = mongoose.Types.ObjectId(targetLGA);
 
   if (!targetLGA) {
-    return res.status(400).json({ error: 'Missing LGA parameter' });
+    return res.status(400).json({ error: "Missing LGA parameter" });
   }
-const data = await Employee.find({ lga: LgaId });
-
-
+  const data = await Employee.find({ lga: LgaId });
 
   res.status(StatusCodes.OK).json({
     success: true,
@@ -116,8 +269,6 @@ const data = await Employee.find({ lga: LgaId });
     data,
   });
 };
-
-
 
 
 
@@ -130,10 +281,6 @@ exports.filterByZones = async(req, res) => {
   }
 
  const data = await Employee.find({ zone: zoneId });
-
- 
-
-
 
   res.status(StatusCodes.OK).json({
     success: true,
@@ -249,6 +396,27 @@ exports.viewEmployeeRequest = async (req,res)=>{
  }
 };
 
+exports.viewAllEmployeeRequest = async(req,res)=>{
+   try {
+     const data = await SupervisorRequest.find();
+
+     if (!data) {
+       return res.status(404).json({ message: "Record not found!" });
+     } else {
+       res.status(200).json({
+         success: true,
+         data,
+       });
+     }
+   } catch (err) {
+     res.status(500).json({
+       success: false,
+       message: "An error occured",
+       error: err.message,
+     });
+   }
+}
+
 exports.deleteEmployeeRequest = async (req, res) => {
   try {
     const data = await SupervisorRequest.find({
@@ -269,11 +437,19 @@ exports.deleteEmployeeRequest = async (req, res) => {
 };
 
 exports.approveEmployeeRequest = async(req,res)=>{
-   const requestId = req.params.id; 
+  //  const requestId = req.params.id; 
+
+   const {id,reason} = req.body;
 
   try {
-    const request = await SupervisorRequest.findById(requestId);
+    const request = await SupervisorRequest.findById(id);
 
+if(!reason){
+  return res.status(StatusCodes.NOT_FOUND).json({
+    success: false,
+    message: "You have to input your reason",
+  });
+}
     if (!request) {
       return res.status(StatusCodes.NOT_FOUND).json({
         success: false,
@@ -281,7 +457,8 @@ exports.approveEmployeeRequest = async(req,res)=>{
       });
     }
 
-    if (request.status === "approved" || request.status === "declined") {
+    if (request.status === "approved") {
+      
       return res.status(StatusCodes.BAD_REQUEST).json({
         success: false,
         message: "Request has already been processed",
@@ -291,6 +468,7 @@ exports.approveEmployeeRequest = async(req,res)=>{
    
     
       request.status = "approved";
+      request.reason=reason;
 
     await request.save();
 
@@ -312,10 +490,13 @@ exports.approveEmployeeRequest = async(req,res)=>{
 
 exports.declineEmployeeRequest = async (req,res)=>{
 
-   const requestId = req.params.id;
+  const {id,reason} = req.body;
+
+  //  const requestId = req.req.id;
+
 
    try {
-     const request = await SupervisorRequest.findById(requestId);
+     const request = await SupervisorRequest.findById(id);
 
      if (!request) {
        return res.status(StatusCodes.NOT_FOUND).json({
@@ -332,7 +513,7 @@ exports.declineEmployeeRequest = async (req,res)=>{
      }
 
      request.status = "declined";
-
+     request.reason = reason;
      await request.save();
 
      res.status(StatusCodes.OK).json({
@@ -478,6 +659,7 @@ exports.fetchBeneficiaryAbsentAttendance = async (req, res) => {
 
 
 
+
 exports.fetchAttendanceDetails = async (req, res) => {
   try {
     const attendanceDetails = await AllAttendance.find();
@@ -560,3 +742,17 @@ exports.filterSupervisorByZone = async(req, res) => {
 
 
 //SuperAdmin profile
+exports.fetchSuperAdminProfile = async(req,res)=>{
+  const {name,phone_number,email,role} = req.body;
+  try{
+
+  }
+  catch(error)
+{
+   res.status(500).json({
+     success: false,
+     message: "An error occured trying to fetch Admins and Supervisors",
+     err: error.message,
+   });
+}}
+
