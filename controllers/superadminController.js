@@ -163,29 +163,33 @@ exports.filterByWards = async(req, res) => {
 };
 
 
-exports.searchBeneficiaries = async(req, res) => {
-  const searchQuery = req.body.searchParams; 
-
+exports.searchBeneficiaries = async (req, res) => {
+  const searchQuery = req.body.searchParams;
 
   if (!searchQuery) {
     return res.status(400).json({ error: "Missing search query parameter" });
   }
 
-   const data = await Employee.find();
+  try {
+    const data = await Employee.find();
 
-  const searchResults = data.filter((beneficiary) => {
-    const beneficiaryName = beneficiary.fullName;
+     const searchResults = data.filter((beneficiary) => {
+       const beneficiaryName = beneficiary.fullName.toLowerCase();
+       const query = searchQuery.toLowerCase();
+       return beneficiaryName.includes(query);
+     });
 
-    const query = this.searchQuery;
-    return beneficiaryName.includes(query);
-  });
-
-
-  res.status(StatusCodes.OK).json({
-    success: true,
-    message: "search result",
-    beneficiaries: searchResults,
-  });
+    res.status(200).json({
+      success: true,
+      message: "Search result",
+      beneficiaries: searchResults,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: "Internal Server Error",
+    });
+  }
 };
 
 
