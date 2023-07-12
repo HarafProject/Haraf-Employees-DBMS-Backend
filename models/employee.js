@@ -71,5 +71,7 @@ const EmployeeSchema = new mongoose.Schema({
   isDeleted: { type: Boolean, default: false },
   deletedAt: { type: Date, default: null },
 
+},{
+  timestamps:true
 });
 module.exports = mongoose.model('Employee', EmployeeSchema);

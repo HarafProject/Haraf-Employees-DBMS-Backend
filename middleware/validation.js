@@ -132,7 +132,7 @@ exports.attendance = (req) => {
       .message('Please enter any challenge encountered in the course of your work today.')
       .required(),
     reason: Joi.string()
-      .min(1)
+      .min(0)
       .optional(),
     zone: Joi.string().regex(/^[0-9a-fA-F]{24}$/)
       .message('Please enter a valid Zone ID')
