@@ -31,7 +31,7 @@ router.get('/edit-employee-request',superadminController.editEmployeeRequest);
 router.get('/add-employee-request',superadminController.addEmployeeRequest);
 router.get("/all-employee-request", superadminController.viewAllEmployeeRequest);
 router.get('/employee-request/:id', superadminController.viewEmployeeRequest);
-router.post('/approve-employee-request', superadminController.approveEmployeeRequest);
+router.post('/approve-employee-request/:id', superadminController.approveEmployeeRequest);
 router.post('/decline-employee-request', superadminController.declineEmployeeRequest);
 
 

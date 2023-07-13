@@ -8,7 +8,7 @@ const SupervisorRequest = require('../models/supervisorRequest');
 const Attendance = require('../models/attendanceRecord'); 
 const AllAttendance = require("../models/attendance");
 const Ward = require('../models/ward');
-const SupervisorVerification = require('../models/supervisorVerification');
+
 
 
 
@@ -439,55 +439,45 @@ exports.deleteEmployeeRequest = async (req, res) => {
 };
 
 exports.approveEmployeeRequest = async(req,res)=>{
-  //  const requestId = req.params.id; 
+   const requestId = req.params.id; 
 
-   const {id,reason} = req.body;
+  //  const {id,reason} = req.body;
+try {
+  const userToBeDeleted = await User.findById(userId);
 
-  try {
-    const request = await SupervisorRequest.findById(id);
+  if (!userToBeDeleted) {
+    return res.status(StatusCodes.NOT_FOUND).json({
+      success: false,
+      message: "User not found",
+    });
+  }
 
-if(!reason){
-  return res.status(StatusCodes.NOT_FOUND).json({
+  // Perform any necessary checks before deleting the user
+  if (userToBeDeleted.isDeleted) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      success: false,
+      message: "Request has already been processed",
+    });
+  }
+
+  // Soft delete the user
+  userToBeDeleted.isDeleted = true;
+  userToBeDeleted.deletedAt = Date.now();
+  await userToBeDeleted.save();
+
+  res.status(StatusCodes.OK).json({
+    success: true,
+    message: "User deleted successfully",
+    user: userToBeDeleted,
+  });
+} catch (error) {
+  res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
     success: false,
-    message: "You have to input your reason",
+    message: "An error occurred while deleting the user",
+    error: error.message,
   });
 }
-    if (!request) {
-      return res.status(StatusCodes.NOT_FOUND).json({
-        success: false,
-        message: "Request not found",
-      });
-    }
 
-    if (request.status === "approved") {
-      
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        success: false,
-        message: "Request has already been processed",
-      });
-    }
-
-   
-    
-      request.status = "approved";
-      request.reason=reason;
-
-    await request.save();
-
-    res.status(StatusCodes.OK).json({
-      success: true,
-      message: "Request has been processed",
-      data: request,
-    });
-  } catch (error) {
-
- res.status(StatusCodes.SERVER_ERROR).json({
-   success: false,
-   message: "Failed to process the request",
-   error: error.message,
- });
-
-  }
 }
 
 exports.declineEmployeeRequest = async (req,res)=>{
@@ -763,7 +753,7 @@ exports.deleteSupervisor = async(req,res)=>{
 exports.verifySupervisor = async (req, res) => {
   try {
     const data = req.params.id;
-    const supervisorId = SupervisorVerification.find({user:data});
+    const supervisorId = User.find(data);
 
     if (!data) {
       return res.status(404).json("ID parameter not found");
@@ -773,7 +763,7 @@ exports.verifySupervisor = async (req, res) => {
       return res.status(404).json(`Supervisor with given id is not found`)
     }
 
-    supervisorId.status = "Verified"
+    supervisorId.isVerified = true;
     return res.status(200).json({
             success: true,
             message: "Supervisor verified successfully",
@@ -867,7 +857,7 @@ exports.editSuperAdminProfile = async (req, res) => {
 
 
 exports.undoVerification = async (req, res) => {
-  const { userId } = req.params;
+  const { userId } = req.params.id;
 
   try {
     const user = await User.findById(userId);
