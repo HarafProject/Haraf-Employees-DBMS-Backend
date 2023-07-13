@@ -151,7 +151,12 @@ exports.filterByTopology = async (req, res) => {
 
 //attendance 
 exports.allZonesAttendanceReport = async (req, res) => {
-  const attendance = await AllAttendance.find().exec();
+  const attendance = await AllAttendance.find()
+    .populate("submittedBy", { password: 0 })
+    .populate("zone")
+    .populate("lga")
+    .populate("attendanceRecord")
+    .exec();
   try {
     // console.log("attendance", attendance);
 
