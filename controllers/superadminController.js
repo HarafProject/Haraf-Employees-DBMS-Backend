@@ -8,6 +8,8 @@ const SupervisorRequest = require('../models/supervisorRequest');
 const Attendance = require('../models/attendanceRecord'); 
 const AllAttendance = require("../models/attendance");
 const Ward = require('../models/ward');
+const SupervisorVerification = require('../models/supervisorVerification');
+
 
 
 const bcrypt = require("bcrypt");
@@ -76,7 +78,7 @@ exports.login = async (req, res) => {
 
   exports.getAllWards = async(req,res)=>{
     try{
-      const data = await Ward.find().exec();
+      const data = await Ward.find().select('name');
       if(!data){
         res.status(404).json({
           status: "error",
@@ -739,13 +741,83 @@ exports.filterSupervisorByZone = async(req, res) => {
   }
 };
 
+exports.deleteSupervisor = async(req,res)=>{
+  try{
+    const data = req.params.id;
+    if(!data){
+      return res.status(404).json("ID parameter not found");
+    }
+
+    data.findByIdAndRemove(data);
+
+  }
+  catch(error){
+      res.status(500).json({
+        success: false,
+        message: "An error occured trying delete a Supervisors",
+        err: error.message,
+      });
+  }
+}
+
+exports.verifySupervisor = async (req, res) => {
+  try {
+    const data = req.params.id;
+    const supervisorId = SupervisorVerification.find({user:data});
+
+    if (!data) {
+      return res.status(404).json("ID parameter not found");
+    }
+
+    if(!supervisorId){
+      return res.status(404).json(`Supervisor with given id is not found`)
+    }
+
+    supervisorId.status = "Verified"
+    return res.status(200).json({
+            success: true,
+            message: "Supervisor verified successfully",
+            data:supervisorId,
+          });
+    
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "An error occured trying delete a Supervisors",
+      err: error.message,
+    });
+  }
+};
+
+exports.supervisorSignInRequest = async(req,res)=>{
+  try{
+
+  }
+  catch(error){
+     res.status(500).json({
+       success: false,
+       message: "An error occured trying delete a Supervisors",
+       err: error.message,
+     });
+  }
+}
+
+
 
 
 //SuperAdmin profile
 exports.fetchSuperAdminProfile = async(req,res)=>{
-  const {name,phone_number,email,role} = req.body;
+  
   try{
+    const user = req.user;
 
+   
+  return console.log(user)
+res.status(200).json({
+  success: true,
+  message: "Superadmin profile data fetched successfully",
+  data: user,
+});
   }
   catch(error)
 {
@@ -755,4 +827,76 @@ exports.fetchSuperAdminProfile = async(req,res)=>{
      err: error.message,
    });
 }}
+
+
+
+exports.editSuperAdminProfile = async (req, res) => {
+  const { name, phone_number, email, role } = req.body;
+
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Update the user profile fields
+    user.name = name;
+    user.phone_number = phone_number;
+    user.email = email;
+    user.role = role;
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Super admin profile updated successfully",
+      data: user,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while updating the super admin profile",
+      error: error.message,
+    });
+  }
+};
+
+
+exports.undoVerification = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Undo the verification process
+    user.isVerified = false;
+
+    // Save the updated user data
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Verification undone successfully",
+      user,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while undoing verification",
+      error: error.message,
+    });
+  }
+};
+
 

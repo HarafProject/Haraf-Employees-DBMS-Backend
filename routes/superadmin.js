@@ -53,6 +53,11 @@ router.get("/attendance-details", superadminController.fetchAttendanceDetails);
 //Manage supervisors
 router.get("/list-of-admins-and-supervisors", superadminController.getSupervisorsAndAdmin);
 router.get("/filter-supervisors-by-zones/:id", superadminController.filterSupervisorByZone);
+router.delete("/delete-supervisor/:id", superadminController.filterSupervisorByZone);
+router.post('/undo-supervisor-verification', superadminController.undoVerification)
 
+//SuperAdmin router 
+router.get("/fetch-super-admin-data", superadminController.fetchSuperAdminProfile);
+router.patch("/edit-super-admin-data", superadminController.editSuperAdminProfile);
 
 module.exports = router;
