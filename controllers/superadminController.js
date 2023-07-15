@@ -367,7 +367,10 @@ exports.searchBeneficiaries = async (req, res) => {
 
 exports.editEmployeeRequest = async (req, res) => {
   try {
-    const data = SupervisorRequest.find({ type: "edit-employee" }).exec();
+    const data = await SupervisorRequest.find({ type: "edit-employee" })
+      .populate("user", { password: 0 })
+      .populate("employee")
+      .exec();
     res.status(StatusCodes.OK).json({
       success: true,
       message: "Edit  Beneficary Request",
@@ -383,7 +386,10 @@ exports.editEmployeeRequest = async (req, res) => {
 
 exports.addEmployeeRequest = async (req, res) => {
   try {
-    const data = await SupervisorRequest.find({ type: "new-employee" }).exec();
+    const data = await SupervisorRequest.find({ type: "new-employee" })
+    .populate("user", { password: 0 })
+      .populate("employee")
+      .exec();
     res.status(StatusCodes.OK).json({
       success: true,
       message: "Add  Beneficary Request",
@@ -446,8 +452,9 @@ exports.deleteEmployeeRequest = async (req, res) => {
     const data = await SupervisorRequest.find({
       type: "delete-employee",
     })
+
+      .populate("user", { password: 0 })
       .populate("employee")
-      .populate("user")
       .exec();
       
     res.status(StatusCodes.OK).json({
