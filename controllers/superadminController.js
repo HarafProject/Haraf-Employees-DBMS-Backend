@@ -383,7 +383,7 @@ exports.editEmployeeRequest = async (req, res) => {
 
 exports.addEmployeeRequest = async (req, res) => {
   try {
-    const data = SupervisorRequest.find({ type: "new-employee" }).exec();
+    const data = await SupervisorRequest.find({ type: "new-employee" }).exec();
     res.status(StatusCodes.OK).json({
       success: true,
       message: "Add  Beneficary Request",
