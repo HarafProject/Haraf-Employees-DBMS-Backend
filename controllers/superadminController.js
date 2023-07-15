@@ -369,7 +369,7 @@ exports.editEmployeeRequest = async (req, res) => {
   try {
     const data = await SupervisorRequest.find({ type: "edit-employee" })
       .populate("user", { password: 0 })
-      .populate("employee")
+      
       .exec();
     res.status(StatusCodes.OK).json({
       success: true,
@@ -452,7 +452,6 @@ exports.deleteEmployeeRequest = async (req, res) => {
     const data = await SupervisorRequest.find({
       type: "delete-employee",
     })
-
       .populate("user", { password: 0 })
       .populate("employee")
       .exec();
