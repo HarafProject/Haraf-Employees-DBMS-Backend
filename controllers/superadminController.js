@@ -445,7 +445,11 @@ exports.deleteEmployeeRequest = async (req, res) => {
   try {
     const data = await SupervisorRequest.find({
       type: "delete-employee",
-    }).exec();
+    })
+      .populate("employee")
+      .populate("user")
+      .exec();
+      
     res.status(StatusCodes.OK).json({
       success: true,
       message: "Beneficiary delete Request",
