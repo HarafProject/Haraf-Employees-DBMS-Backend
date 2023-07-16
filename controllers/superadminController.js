@@ -451,18 +451,20 @@ exports.deleteEmployeeRequest = async (req, res) => {
   try {
     const data = await SupervisorRequest.find({
       type: "delete-employee",
-    })
-      .populate("user", { password: 0 })
+    }).select()
       .populate("employee")
-      .exec();
+      .populate("user", { password: 0 });
       
+      console.log('this is thet data',data)
+       const employee = await Employee.findOne({_id:data.employee})
     res.status(StatusCodes.OK).json({
       success: true,
       message: "Beneficiary delete Request",
       data,
+      employee,
     });
   } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+    res.status(500).json({
       status: "error",
       message: "Failed to retrieve the list of beneficiaries",
       error: error.message,
@@ -471,39 +473,38 @@ exports.deleteEmployeeRequest = async (req, res) => {
 };
 
 exports.approveEmployeeRequest = async (req, res) => {
-  const requestId = req.params.id;
+  const requestId = req.body.id;
 
   //  const {id,reason} = req.body;
   try {
-    const userToBeDeleted = await User.findById(userId);
+    const userToBeApproved = await SupervisorRequest.findById(requestId);
 
-    if (!userToBeDeleted) {
+    if (!userToBeApproved) {
       return res.status(StatusCodes.NOT_FOUND).json({
         success: false,
-        message: "User not found",
+        message: "Supervisor reqeust not found",
       });
     }
 
     // Perform any necessary checks before deleting the user
-    if (userToBeDeleted.isDeleted) {
+    if (userToBeApproved.status === "approved") {
       return res.status(StatusCodes.BAD_REQUEST).json({
         success: false,
         message: "Request has already been processed",
       });
     }
 
-    // Soft delete the user
-    userToBeDeleted.isDeleted = true;
-    userToBeDeleted.deletedAt = Date.now();
-    await userToBeDeleted.save();
+   userToBeApproved.status = "approved";
+   await userToBeApproved.save();
+
 
     res.status(StatusCodes.OK).json({
       success: true,
-      message: "User deleted successfully",
-      user: userToBeDeleted,
+      message: "Reqeust approved   successfully",
+      user: userToBeApproved,
     });
   } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+    res.status(500).json({
       success: false,
       message: "An error occurred while deleting the user",
       error: error.message,
@@ -512,7 +513,7 @@ exports.approveEmployeeRequest = async (req, res) => {
 };
 
 exports.declineEmployeeRequest = async (req, res) => {
-  const { id, reason } = req.body;
+  const { id } = req.body;
 
   //  const requestId = req.req.id;
 
@@ -534,7 +535,7 @@ exports.declineEmployeeRequest = async (req, res) => {
     }
 
     request.status = "declined";
-    request.reason = reason;
+    // request.reason = reason;
     await request.save();
 
     res.status(StatusCodes.OK).json({
@@ -690,6 +691,7 @@ exports.fetchAttendanceDetails = async (req, res) => {
     });
   }
 };
+
 
 
 
