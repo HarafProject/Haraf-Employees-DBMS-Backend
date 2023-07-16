@@ -1,11 +1,11 @@
-// const express = require('express');
-// const router = express.Router();
-// const {  validate, validateAdmin, loginValidator } = require("../middleware/validation");
-// const superadminController = require('../controllers/superadminController');
-// const adminController = require('../controllers/adminController');
-// const auth = require("../middleware/auth")
-// const role = require("../middleware/role")
-// const beneficiaryController = require('../controllers/beneficiaryController');
+const express = require('express');
+const router = express.Router();
+const {  validate, validateAdmin, loginValidator } = require("../middleware/validation");
+const superadminController = require('../controllers/superadminController');
+const adminController = require('../controllers/adminController');
+const auth = require("../middleware/auth")
+const role = require("../middleware/role")
+const beneficiaryController = require('../controllers/beneficiaryController');
 
 // //Create Account
 // router.post("/create-account", validate(validateAdmin), superadminController.createSuperAdmin);
@@ -25,7 +25,7 @@ router.post("/search", superadminController.searchBeneficiaries);
 router.get("/all-ward", superadminController.getAllWards);
 
 
-//Request routes
+// //Request routes
 router.get('/delete-employee-request', superadminController.deleteEmployeeRequest);
 router.get('/edit-employee-request',superadminController.editEmployeeRequest);
 router.get('/add-employee-request',superadminController.addEmployeeRequest);
@@ -67,4 +67,4 @@ router.get('/undo-supervisor-verification/:id', superadminController.undoVerific
 router.get("/fetch-super-admin-data", superadminController.fetchSuperAdminProfile);
 router.patch("/edit-super-admin-data", superadminController.editSuperAdminProfile);
 
-// module.exports = router;
+module.exports = router;
