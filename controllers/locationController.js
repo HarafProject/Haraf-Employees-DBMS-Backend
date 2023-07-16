@@ -324,6 +324,16 @@ exports.addWardList = async (req, res) => {
     });
 }
 
+exports.wards = async (req, res) => {
+
+    const wards = await Ward.find().sort({ name: "asc" }).populate('lga', '_id name').exec();
+
+    return res.status(StatusCodes.OK).json({
+        status: 'success',
+        wards
+    });
+
+}
 exports.wardsByLGA = async (req, res) => {
 
     const wards = await Ward.find({ lga: req.params.lga_id }).sort({ name: "asc" }).populate('lga', '_id name').exec();

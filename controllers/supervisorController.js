@@ -120,12 +120,14 @@ exports.addEmployee = async (req, res) => {
 };
 
 exports.getEmployee = async (req, res) => {
+  
     const employees = await Employee.find({ lga: req.user.lga })
         .sort({ createdAt: -1 })
         .populate("workTypology", "name")
         .populate("zone", "name")
         .populate("lga", "name")
         .populate("ward", "name");
+        console.log(employees)
     return res.status(StatusCodes.OK).json({
         success: true,
         employees

@@ -18,5 +18,16 @@ router.put('/handle-request/:id', auth, role(["admin", "super-admin"]),adminCont
 router.post("/create-admin", validate(validateAdmin), adminController.createAdmin);
 router.post("/login", validate(loginValidator), adminController.login);
 
-router.get('/all-beneficiaries', beneficiaryController.getAllBeneficiary);
+router.get('/data-summary',auth,role(["admin", "super-admin"]),adminController.getDataSummary);
+
+router.get('/all-beneficiaries',auth,role(["admin", "super-admin"]), beneficiaryController.getAllBeneficiary);
+
+router.get('/beneficiary-attendance-summary/:id',auth,role(["admin", "super-admin"]), beneficiaryController.getBeneficiaryAttendnanceSummary);
+
+router.get('/attendance-dates',auth,role(["admin", "super-admin"]), adminController.getUniqueAttendanceDates);
+
+router.get('/attendance-weeks',auth,role(["admin", "super-admin"]), adminController.getUniqueAttendanceWeeks);
+
+router.get('/beneficiary-attendance-analytics',auth,role(["admin", "super-admin"]), adminController.getBeneficiaryAttendnanceAnalytics);
+
 module.exports = router;

@@ -47,7 +47,7 @@ const userSchema = new mongoose.Schema({
   operations: {
     type: String,
     enum: ["create", "read", "update", "delete", "super"],
-    default: "read"
+    default: "super"
   },
   isVerified: {
     type: Boolean,
