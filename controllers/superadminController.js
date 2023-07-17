@@ -369,6 +369,8 @@ exports.editEmployeeRequest = async (req, res) => {
   try {
     const data = await SupervisorRequest.find({ type: "edit-employee" })
       .populate("user", { password: 0 })
+      // .populate('employee')
+      //this employee is not populating 
       
       .exec();
     res.status(StatusCodes.OK).json({
@@ -693,6 +695,29 @@ exports.fetchAttendanceDetails = async (req, res) => {
 };
 
 
+exports.deleteSupervisor = async (req, res) => {
+
+  try {
+    const supervisorId = req.params.id; 
+
+    const supervisor = await Users.findById(supervisorId);
+
+    if (!supervisor) {
+      return res.status(404).json({ message: "Supervisor not found" });
+    }
+
+    // Delete the supervisor
+    await supervisor.remove();
+
+    res.json({ message: "Supervisor deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "An error occurred while deleting the supervisor" });
+  }
+};
+
 
 
 
@@ -919,9 +944,6 @@ exports.getASupervisor = async (req, res) => {
   }
 };
 
-
-
-
 exports.supervisorSignInRequest = async (req, res) => {
   try {
   } catch (error) {
@@ -932,10 +954,6 @@ exports.supervisorSignInRequest = async (req, res) => {
     });
   }
 };
-
-
-
-
 
 //SuperAdmin profile
 exports.fetchSuperAdminProfile = async (req, res) => {

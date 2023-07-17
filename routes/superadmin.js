@@ -59,6 +59,7 @@ router.get("/filter-supervisors-by-zones/:id", superadminController.filterSuperv
 router.get("/filter-supervisors-by-lga/:id", superadminController.filterSupervisorByLGA);
 router.get("/verify-supervisor/:id", superadminController.verifySupervisor);
 router.get("/view-a-supervisor/:id", superadminController.getASupervisor);
+router.get("/delete-supervisor/:id", superadminController.deleteSupervisor);
 
 router.delete("/delete-supervisor/:id", superadminController.filterSupervisorByZone);
 router.get('/undo-supervisor-verification/:id', superadminController.undoVerification)
