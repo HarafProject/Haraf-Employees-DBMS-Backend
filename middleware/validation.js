@@ -63,7 +63,7 @@ exports.validateEmployee = (req) => {
       .pattern(/^\d{10}$/)
       .message('Please enter a valid bank account number.')
       .required(),
-      bankCode: Joi.string()
+    bankCode: Joi.string()
       .min(0)
       .optional(),
     bankName: Joi.string().min(2).max(250).required(),
@@ -85,6 +85,32 @@ exports.validateEmployee = (req) => {
   return schema.validate(req);
 };
 
+exports.validateBeneficiaryBVN = (req) => {
+
+  const schema = Joi.object({
+    accountNumber: Joi.string()
+      .pattern(/^\d{10}$/)
+      .message('Please enter a valid bank account number')
+      .required(),
+    bankcode: Joi.string()
+      .min(1)
+      .required(),
+    firstname: Joi.string()
+      .min(0)
+      .max(1024)
+      .required(),
+    lastname: Joi.string()
+      .min(0)
+      .max(1024)
+      .required(),
+      bankName: Joi.string()
+      .min(0)
+      .max(1024)
+      .optional(),
+
+  })
+  return schema.validate(req);
+}
 
 exports.validateAccount = (req) => {
 
@@ -186,7 +212,7 @@ exports.validateAdmin = (req) => {
     lga: Joi.string().regex(/^[0-9a-fA-F]{24}$/)
       .message('Please enter a valid LGA ID')
       .required(),
-      zone: Joi.string().regex(/^[0-9a-fA-F]{24}$/)
+    zone: Joi.string().regex(/^[0-9a-fA-F]{24}$/)
       .message('Please enter a valid Zone ID')
       .required(),
     password: Joi.string().min(5).max(255).required(),

@@ -23,6 +23,7 @@ const EmployeeSchema = new mongoose.Schema({
   bankName: { type: String, required: true },
   bankCode: { type: String, required: true },
   accountNumber: { type: String, required: true },
+  BVN: { type: String, required: false },
   state: {
     type: mongoose.Schema.Types.ObjectId, required: true, default: "630500e1c9ae75a1ce111f15"
   },

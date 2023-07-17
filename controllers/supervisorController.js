@@ -8,6 +8,7 @@ const Attendance = require("../models/attendance")
 const AttendanceRecord = require("../models/attendanceRecord")
 const cloudinary = require("../utils/cloudinary");
 const SupervisorNotification = require("../models/notifySupervisor")
+const { Verify_BVN } = require("../utils/bvnVerification")
 
 exports.getNotifications = async (req, res) => {
     const notifications = await SupervisorNotification.find({ supervisor: req.user._id })
@@ -27,6 +28,47 @@ exports.getNotifications = async (req, res) => {
         notifications
     });
 }
+
+exports.verify_Beneficiary_BVN = async (req, res) => {
+    const { accountNumber, bankcode, firstname, lastname,bankName } = req.body;
+
+    // Verify bank account number
+    const result = await Verify_BVN(firstname, lastname, accountNumber, bankcode);
+
+    // Invalid account number
+    if (!result.bvn) {
+        return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+            status: "failed",
+            error:result
+        });
+    }
+    const beneficiaryExist = await Employee.findOne({
+        accountNumber,
+        BVN: result.bvn
+    })
+
+    if (beneficiaryExist) return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+        status: "failed",
+        error: "Beneficiary verification failed. BVN already registered."
+    });
+
+    const bankDetails = {
+        accountNumber,
+        bankName,
+        bankCode: bankcode,
+        bvn:result.bvn,
+        photo:result.photo,
+        gender:result.gender
+
+    };
+
+    return res.status(StatusCodes.OK).json({
+        status: "success",
+        message: "Beneficiary details verified successfully.",
+        bankDetails
+    });
+};
+
 exports.bank_details = async (req, res) => {
     const { accountNumber, bankCode, bankName } = req.body;
 
@@ -120,14 +162,14 @@ exports.addEmployee = async (req, res) => {
 };
 
 exports.getEmployee = async (req, res) => {
-  
+
     const employees = await Employee.find({ lga: req.user.lga })
         .sort({ createdAt: -1 })
         .populate("workTypology", "name")
         .populate("zone", "name")
         .populate("lga", "name")
         .populate("ward", "name");
-        console.log(employees)
+    console.log(employees)
     return res.status(StatusCodes.OK).json({
         success: true,
         employees
