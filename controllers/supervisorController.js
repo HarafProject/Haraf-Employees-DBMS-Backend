@@ -8,7 +8,7 @@ const Attendance = require("../models/attendance")
 const AttendanceRecord = require("../models/attendanceRecord")
 const cloudinary = require("../utils/cloudinary");
 const SupervisorNotification = require("../models/notifySupervisor")
-const { Verify_BVN } = require("../utils/bvnVerification")
+const { Verify_BVN, BVN_Bank_List } = require("../utils/bvnVerification")
 
 exports.getNotifications = async (req, res) => {
     const notifications = await SupervisorNotification.find({ supervisor: req.user._id })
@@ -30,16 +30,17 @@ exports.getNotifications = async (req, res) => {
 }
 
 exports.verify_Beneficiary_BVN = async (req, res) => {
-    const { accountNumber, bankcode, firstname, lastname,bankName } = req.body;
+    const { accountNumber, bankcode, firstname, lastname, bankName } = req.body;
 
     // Verify bank account number
     const result = await Verify_BVN(firstname, lastname, accountNumber, bankcode);
+    console.log(result)
 
     // Invalid account number
     if (!result.bvn) {
         return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
             status: "failed",
-            error:result
+            error: result
         });
     }
     const beneficiaryExist = await Employee.findOne({
@@ -53,12 +54,13 @@ exports.verify_Beneficiary_BVN = async (req, res) => {
     });
 
     const bankDetails = {
+        fullName: `${result?.firstname} ${result?.middlename} ${result?.lastname}`,
         accountNumber,
         bankName,
         bankCode: bankcode,
-        bvn:result.bvn,
-        photo:result.photo,
-        gender:result.gender
+        bvn: result.bvn,
+        photo: result.photo,
+        gender: result.gender
 
     };
 
@@ -100,7 +102,7 @@ exports.bank_details = async (req, res) => {
 
 exports.bank_list = async (req, res) => {
 
-    const { data } = await bankList();
+    const data = await BVN_Bank_List();
     return res.status(StatusCodes.OK).json({
         status: "success",
         banks: data
@@ -122,7 +124,8 @@ exports.addEmployee = async (req, res) => {
     let employee = await Employee.findOne({
         $or: [
             { accountNumber: req.body.accountNumber },
-            { phone: req.body.phone }
+            { phone: req.body.phone },
+            { BVN: req.body.BVN }
         ]
     });
     if (employee) return res.status(StatusCodes.BAD_REQUEST).json({ error: "Employee already exist. Please contact Admin" });
@@ -145,6 +148,7 @@ exports.addEmployee = async (req, res) => {
                 "householdSize",
                 "householdHead",
                 "sex",
+                "BVN"
             ]);
 
         const result = await cloudinary.uploader.upload(req.file.path);
@@ -169,7 +173,7 @@ exports.getEmployee = async (req, res) => {
         .populate("zone", "name")
         .populate("lga", "name")
         .populate("ward", "name");
-    console.log(employees)
+
     return res.status(StatusCodes.OK).json({
         success: true,
         employees
@@ -205,7 +209,6 @@ exports.deleteEmployee = async (req, res) => {
 
 exports.updateSingleEmployee = async (req, res) => {
     const { notification } = req.query
-    console.log(notification)
 
     if (req.file) {
         const result = await cloudinary.uploader.upload(req.file.path);
@@ -339,4 +342,29 @@ exports.submit_attendance = async (req, res) => {
     });
 }
 
+exports.get_attendance_report = async (req, res) => {
 
+    let attendance = await Attendance.find({ lga: req.user.lga })
+        .sort({ date: -1 })
+        .populate("submittedBy", "firstname surname")
+        .populate("zone")
+        .populate("lga")
+        .populate({
+            path: 'attendanceRecord',
+            populate: [
+                { path: 'supervisor', select: '-password' },
+                'employee',
+                'zone',
+                'lga',
+                'ward',
+                'workTypology'
+            ]
+        })
+        .exec();
+
+    res.status(StatusCodes.OK).json({
+        status: "success",
+        data: attendance
+
+    });
+}

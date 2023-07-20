@@ -132,7 +132,7 @@ exports.updateadmin = asyncHandler(async (req, res, next) => {
 exports.handleSupervisorRequest = async (req, res) => {
   const { action, type } = req.query
   const { reason } = req.body
-  if (action === "declined" && !reason) return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({ error: "Please give a reason for declining request." });
+  // if (action === "declined" && !reason) return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({ error: "Please give a reason for declining request." });
 
   const request = await SupervisorRequest.findByIdAndUpdate(req.params.id,
     {
@@ -142,6 +142,37 @@ exports.handleSupervisorRequest = async (req, res) => {
     }, { new: true })
     .populate("user")
     .exec()
+
+// // Give supervisor right of action
+//   if (action === "approved" && type !== "add") {
+//     // Action to edit or delete
+//     await Beneficiary.findByIdAndUpdate(request.employee,
+//       {
+//         $set: {
+//           supervisorAction: type
+//         }
+//       }, { new: true })
+//       .exec()
+
+//     await User.findByIdAndUpdate(request.user._id,
+//       {
+//         $set: {
+//           operations: type
+//         }
+//       }, { new: true })
+//       .exec()
+//   } else if (action === "approved" && type === "add") {
+//     // Action to add
+//     await User.findByIdAndUpdate(request.user._id,
+//       {
+//         $set: {
+//           operations: "create"
+//         }
+//       }, { new: true })
+//       .populate("user")
+//       .exec()
+//   }
+
   const notifySupervisor = new SupervisorNotification({
     supervisor: request.user,
     request: request,

@@ -23,7 +23,7 @@ const EmployeeSchema = new mongoose.Schema({
   bankName: { type: String, required: true },
   bankCode: { type: String, required: true },
   accountNumber: { type: String, required: true },
-  BVN: { type: String, required: false },
+  BVN: { type: String, required: true },
   state: {
     type: mongoose.Schema.Types.ObjectId, required: true, default: "630500e1c9ae75a1ce111f15"
   },
@@ -69,10 +69,11 @@ const EmployeeSchema = new mongoose.Schema({
     type: String,
     default: "https://res.cloudinary.com/jossyjoe/image/upload/v1606258324/UserIcon_tmu1v6.jpg"
   },
+  supervisorAction: { type: String, required: false, enum: ["edit", "delete"] },
   isDeleted: { type: Boolean, default: false },
   deletedAt: { type: Date, default: null },
 
-},{
-  timestamps:true
+}, {
+  timestamps: true
 });
 module.exports = mongoose.model('Employee', EmployeeSchema);

@@ -11,6 +11,8 @@ const Ward = require("../models/ward");
 
 const bcrypt = require("bcrypt");
 const { search } = require("../routes/superadmin");
+const { Admin } = require("../models/admin");
+const User = require("../models/user");
 // Create SuperAdmin
 // exports.createSuperAdmin = async (req, res) => {
 //   let superadmin = await SuperAdmin.findOne({ email: req.body.email });
@@ -151,27 +153,54 @@ exports.filterByTopology = async (req, res) => {
 
 //attendance 
 exports.allZonesAttendanceReport = async (req, res) => {
-  const attendance = await AllAttendance.find()
-    .populate("submittedBy", { password: 0 })
-    .populate("zone")
-    .populate("lga")
-    .populate("attendanceRecord")
-    .exec();
-  try {
-    // console.log("attendance", attendance);
 
-    res.status(StatusCodes.OK).json({
-      success: true,
-      message: "All zones attendance",
-      data: attendance,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Error occured while feching attendance ",
-      err: error.message,
-    });
+  let attendance;
+  if (req.user.role === "admin") {
+    attendance = await AllAttendance.find({ zone: req.user.zone })
+      .sort({ date: -1 })
+      .populate("submittedBy", { password: 0 })
+      .populate("zone")
+      .populate("lga")
+      .populate({
+        path: 'attendanceRecord',
+        populate: [
+          { path: 'supervisor', select: '-password' },
+          'employee',
+          'zone',
+          'lga',
+          'ward',
+          'workTypology'
+        ]
+      })
+      .exec();
+  } else {
+    attendance = await AllAttendance.find()
+      .sort({ date: -1 })
+      .populate("submittedBy", { password: 0 })
+      .populate("zone")
+      .populate("lga")
+      .populate({
+        path: 'attendanceRecord',
+        populate: [
+          { path: 'supervisor', select: '-password' },
+          'employee',
+          'zone',
+          'lga',
+          'ward',
+          'workTypology'
+        ]
+      })
+      .exec();
   }
+
+  // console.log("attendance", attendance);
+
+  res.status(StatusCodes.OK).json({
+    success: true,
+    message: "All zones attendance",
+    data: attendance,
+  });
+
 };
 
 exports.zoneReport = async (req, res) => {
@@ -253,9 +282,9 @@ exports.filterAttendanceByDate = async (req, res) => {
 exports.searchAttendanceReport = async (req, res) => {
   const searchQuery = req.body.searchParams;
 
-//   if (!searchQuery) {
-//     return res.status(400).json({ error: "Missing search query parameter" });
-//   }
+  //   if (!searchQuery) {
+  //     return res.status(400).json({ error: "Missing search query parameter" });
+  //   }
 
   try {
     const data = await Users.find({ role: "supervisor" })
@@ -366,43 +395,104 @@ exports.searchBeneficiaries = async (req, res) => {
 };
 
 exports.editEmployeeRequest = async (req, res) => {
-  try {
-    const data = await SupervisorRequest.find({ type: "edit-employee" })
-      .populate("user", { password: 0 })
-      
+  let pendingRequests;
+  if (req.user.role === "admin") {
+
+    // Fetch pending requests where the user's zone is equal to the admin's zone
+    pendingRequests = await SupervisorRequest.find({
+      status: 'pending',
+      type: "edit-employee",
+    })
+      .populate({
+        path: "employee",
+        populate: [
+          { path: "lga", model: "LGA" }, // Populate 'lga' field referencing 'LGA' model
+          { path: "ward", model: "Ward" }, // Populate 'ward' field referencing 'Ward' model
+        ],
+      })
+      .populate({
+        path: 'user',
+        select: "-password",
+        match: { zone: req.user.zone } // Filtering based on the admin's zone ID
+      })
       .exec();
-    res.status(StatusCodes.OK).json({
-      success: true,
-      message: "Edit  Beneficary Request",
-      data,
-    });
-  } catch (error) {
-    res.status(StatusCodes.SERVER_ERROR).json({
-      status: "error",
-      error: error.message,
-    });
+
+  } else {
+    // Fetch pending requests where the user's zone is equal to the admin's zone
+    pendingRequests = await SupervisorRequest.find({
+      status: 'pending',
+      type: "edit-employee",
+    })
+      .populate({
+        path: "employee",
+        populate: [
+          { path: "lga", model: "LGA" }, // Populate 'lga' field referencing 'LGA' model
+          { path: "ward", model: "Ward" }, // Populate 'ward' field referencing 'Ward' model
+        ],
+      })
+      .populate({
+        path: 'user',
+      })
+      .exec();
+
   }
+
+  res.status(StatusCodes.OK).json({
+    success: true,
+    message: "Beneficiary edit Request",
+    data: pendingRequests,
+  });
+
 };
 
 exports.addEmployeeRequest = async (req, res) => {
-  try {
-    const data = await SupervisorRequest.find({ type: "new-employee" })
-    .populate("user", { password: 0 })
-      .populate("employee")
-      .exec();
-    res.status(StatusCodes.OK).json({
-      success: true,
-      message: "Add  Beneficary Request",
-      data,
-    });
-  } catch (error) {
-    res.status(StatusCodes.SERVER_ERROR).json({
-      status: "error",
-      error: error.message,
-    });
-  }
-};
 
+  let pendingRequests;
+  if (req.user.role === "admin") {
+
+    // Fetch pending requests where the user's zone is equal to the admin's zone
+    pendingRequests = await SupervisorRequest.find({
+      status: 'pending',
+      type: "add-employee",
+    })
+      .populate({
+        path: "employee",
+        populate: [
+          { path: "lga", model: "LGA" }, // Populate 'lga' field referencing 'LGA' model
+          { path: "ward", model: "Ward" }, // Populate 'ward' field referencing 'Ward' model
+        ],
+      })
+      .populate({
+        path: 'user',
+        select: "-password",
+        match: { zone: req.user.zone } // Filtering based on the admin's zone ID
+      })
+      .exec();
+
+  } else {
+    // Fetch pending requests where the user's zone is equal to the admin's zone
+    pendingRequests = await SupervisorRequest.find({
+      status: 'pending',
+      type: "add-employee",
+    })
+      .populate({
+        path: "employee",
+        populate: [
+          { path: "lga", model: "LGA" }, // Populate 'lga' field referencing 'LGA' model
+          { path: "ward", model: "Ward" }, // Populate 'ward' field referencing 'Ward' model
+        ],
+      })
+      .populate({
+        path: 'user',
+      })
+      .exec();
+  };
+  res.status(StatusCodes.OK).json({
+    success: true,
+    message: "Beneficiary add Request",
+    data: pendingRequests,
+  });
+}
 exports.viewEmployeeRequest = async (req, res) => {
   try {
     const requestId = req.params.id;
@@ -448,68 +538,85 @@ exports.viewAllEmployeeRequest = async (req, res) => {
 };
 
 exports.deleteEmployeeRequest = async (req, res) => {
-  try {
-    const data = await SupervisorRequest.find({
+  let pendingRequests;
+  if (req.user.role === "admin") {
+
+    // Fetch pending requests where the user's zone is equal to the admin's zone
+    pendingRequests = await SupervisorRequest.find({
+      status: 'pending',
       type: "delete-employee",
-    }).select()
-      .populate("employee")
-      .populate("user", { password: 0 });
-      
-      console.log('this is thet data',data)
-       const employee = await Employee.findOne({_id:data.employee})
-    res.status(StatusCodes.OK).json({
-      success: true,
-      message: "Beneficiary delete Request",
-      data,
-      employee,
-    });
-  } catch (error) {
-    res.status(500).json({
-      status: "error",
-      message: "Failed to retrieve the list of beneficiaries",
-      error: error.message,
-    });
+    })
+      .populate({
+        path: "employee",
+        populate: [
+          { path: "lga", model: "LGA" }, // Populate 'lga' field referencing 'LGA' model
+          { path: "ward", model: "Ward" }, // Populate 'ward' field referencing 'Ward' model
+        ],
+      })
+      .populate({
+        path: 'user',
+        select: "-password",
+        match: { zone: req.user.zone } // Filtering based on the admin's zone ID
+      })
+      .exec();
+
+  } else {
+    // Fetch pending requests where the user's zone is equal to the admin's zone
+    pendingRequests = await SupervisorRequest.find({
+      status: 'pending',
+      type: "delete-employee",
+    })
+      .populate({
+        path: "employee",
+        populate: [
+          { path: "lga", model: "LGA" }, // Populate 'lga' field referencing 'LGA' model
+          { path: "ward", model: "Ward" }, // Populate 'ward' field referencing 'Ward' model
+        ],
+      })
+      .populate({
+        path: 'user',
+      })
+      .exec();
+
   }
+
+  res.status(StatusCodes.OK).json({
+    success: true,
+    message: "Beneficiary delete Request",
+    data: pendingRequests,
+  });
+
 };
 
 exports.approveEmployeeRequest = async (req, res) => {
   const requestId = req.body.id;
+  const userToBeApproved = await SupervisorRequest.findById(requestId);
 
-  //  const {id,reason} = req.body;
-  try {
-    const userToBeApproved = await SupervisorRequest.findById(requestId);
-
-    if (!userToBeApproved) {
-      return res.status(StatusCodes.NOT_FOUND).json({
-        success: false,
-        message: "Supervisor reqeust not found",
-      });
-    }
-
-    // Perform any necessary checks before deleting the user
-    if (userToBeApproved.status === "approved") {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        success: false,
-        message: "Request has already been processed",
-      });
-    }
-
-   userToBeApproved.status = "approved";
-   await userToBeApproved.save();
-
-
-    res.status(StatusCodes.OK).json({
-      success: true,
-      message: "Reqeust approved   successfully",
-      user: userToBeApproved,
-    });
-  } catch (error) {
-    res.status(500).json({
+  if (!userToBeApproved) {
+    return res.status(StatusCodes.NOT_FOUND).json({
       success: false,
-      message: "An error occurred while deleting the user",
-      error: error.message,
+      message: "Supervisor reqeust not found",
     });
   }
+
+  // Perform any necessary checks before deleting the user
+  if (userToBeApproved.status === "approved") {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      success: false,
+      message: "Request has already been processed",
+    });
+  }
+
+  userToBeApproved.status = "approved";
+  await userToBeApproved.save();
+
+
+  res.status(StatusCodes.OK).json({
+    success: true,
+    message: "Reqeust approved   successfully",
+    user: userToBeApproved,
+  });
+
 };
 
 exports.declineEmployeeRequest = async (req, res) => {
@@ -578,7 +685,7 @@ exports.getBneneficiaryProfile = async (req, res) => {
   }
 };
 
-exports.redoEmployeeAction = async (req, res) => {};
+exports.redoEmployeeAction = async (req, res) => { };
 
 exports.fetchBeneficiaryAttendance = async (req, res) => {
   const beneficiaryId = req.params.id;
@@ -693,26 +800,47 @@ exports.fetchAttendanceDetails = async (req, res) => {
 };
 
 
-
-
-
-
 //Manage supervisors
 exports.getSupervisorsAndAdmin = async (req, res) => {
-  try {
-    const data = await Users.find({role:"supervisor"},{password:0}).exec();
+  if (req.user.role === "admin") {
+    const data = await Users.find({ zone: req.user.zone }, { password: 0 })
+      .populate("zone")
+      .populate("lga")
+      .exec();
     res.status(200).json({
       success: true,
       message: "Successful",
       data: data,
     });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "An error occured trying to fetch Admins and Supervisors",
-      err: error.message,
+  } else {
+    const data = await Users.find({}, { password: 0 })
+      .populate("zone")
+      .populate("lga")
+      .exec();
+
+    res.status(200).json({
+      success: true,
+      message: "Successful",
+      data,
     });
   }
+
+};
+
+//Manage supervisors
+exports.getAdmins = async (req, res) => {
+
+  const data = await Admin.find({}, { password: 0 })
+    .populate("zone")
+    .populate("lga")
+    .exec();
+
+  res.status(200).json({
+    success: true,
+    message: "Successful",
+    data,
+  });
+
 };
 
 exports.searchSupervisor = async (req, res) => {
@@ -825,69 +953,118 @@ exports.deleteSupervisor = async (req, res) => {
 };
 
 exports.verifySupervisor = async (req, res) => {
-  try {
-    const supervisorId = req.params.id;
 
-    if (!supervisorId) {
-      return res.status(404).json({ error: "ID parameter not found" });
-    }
+  const supervisorId = req.params.id;
 
-    const supervisor = await Users.findOne({ _id: supervisorId });
-
-    if (!supervisor) {
-      return res
-        .status(404)
-        .json({ error: "Supervisor with the given id is not found" });
-    }
-
-    supervisor.isVerified = true;
-    await supervisor.save();
-
-    return res.status(200).json({
-      success: true,
-      message: "Supervisor verified successfully",
-      data: supervisor,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "An error occurred while verifying a Supervisor",
-      error: error.message,
-    });
+  if (!supervisorId) {
+    return res.status(404).json({ error: "ID parameter not found" });
   }
+
+  const supervisor = await Users.findOne({ _id: supervisorId })
+    .populate("lga")
+    .populate("zone")
+    .exec();
+
+  if (!supervisor) {
+    return res
+      .status(404)
+      .json({ error: "Supervisor with the given id is not found" });
+  }
+
+  supervisor.isVerified = true;
+  await supervisor.save();
+
+
+  return res.status(200).json({
+    success: true,
+    message: "Supervisor verified successfully",
+    data: supervisor,
+  });
+
+};
+
+exports.verifyAdmin = async (req, res) => {
+
+  const adminId = req.params.id;
+
+  if (!adminId) {
+    return res.status(404).json({ error: "ID parameter not found" });
+  }
+
+  const admin = await Admin.findOne({ _id: adminId })
+    .populate("lga")
+    .populate("zone")
+    .exec();
+
+  if (!admin) {
+    return res
+      .status(404)
+      .json({ error: "Admin with the given id is not found" });
+  }
+
+  admin.isVerified = true;
+  await admin.save();
+
+
+  return res.status(200).json({
+    success: true,
+    message: "Admin verified successfully",
+    data: admin,
+  });
+
 };
 
 exports.undoVerification = async (req, res) => {
   const userId = req.params.id;
 
-  try {
-    const user = await Users.findOne({ _id: userId });
+  const user = await Users.findOne({ _id: userId })
+    .populate("lga")
+    .populate("zone")
+    .exec();;
 
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-
-    user.isVerified = false;
-    user.reference="" /// i dont know this reference ...ill ask
-    await user.save();
-
-    res.status(200).json({
-      success: true,
-      message: "Verification undone successfully",
-      user: user,
-    });
-  } catch (error) {
-    res.status(500).json({
+  if (!user) {
+    return res.status(404).json({
       success: false,
-      message: "An error occurred while undoing verification",
-      error: error.message,
+      message: "User not found",
     });
   }
+
+  user.isVerified = false;
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Verification undone successfully",
+    data: user,
+  });
+
 };
 
+exports.undoAdminVerification = async (req, res) => {
+  const userId = req.params.id;
+
+  const user = await Admin.findOne({ _id: userId })
+    .populate("lga")
+    .populate("zone")
+    .exec();;
+
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found",
+    });
+  }
+
+  user.isVerified = false;
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Verification undone successfully",
+    data: user,
+  });
+
+};
 
 exports.getASupervisor = async (req, res) => {
   try {
@@ -957,38 +1134,21 @@ exports.fetchSuperAdminProfile = async (req, res) => {
   }
 };
 
-exports.editSuperAdminProfile = async (req, res) => {
-  const { name, phone_number, email, role } = req.body;
+exports.editAdminProfile = async (req, res) => {
+  const { firstname, surname, phone } = req.body;
 
-  try {
-    const user = await User.findById(req.user._id);
+  const user = await Admin.findByIdAndUpdate(req.user._id, {
+    firstname,
+    surname,
+    phone
+  }, { new: true })
+    .select("firstname email phone surname email role zone lga operations")
+    .exec()
 
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-
-    // Update the user profile fields
-    user.name = name;
-    user.phone_number = phone_number;
-    user.email = email;
-    user.role = role;
-
-    await user.save();
-
-    res.status(200).json({
-      success: true,
-      message: "Super admin profile updated successfully",
-      data: user,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "An error occurred while updating the super admin profile",
-      error: error.message,
-    });
-  }
+  res.status(StatusCodes.OK).json({
+    status: "success",
+    message: "Profile updated succesfully",
+    user
+  });
 };
 

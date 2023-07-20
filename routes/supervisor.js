@@ -50,6 +50,8 @@ router.post('/edit-employee-request', auth, validate(supervisorRequest), supervi
 
 router.post('/attendance', auth, validate(attendance), supervisorController.submit_attendance);
 
+router.get('/attendance', auth, supervisorController.get_attendance_report);
+
 
 
 
