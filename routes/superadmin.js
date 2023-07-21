@@ -27,8 +27,8 @@ router.get("/all-ward", superadminController.getAllWards);
 
 // //Request routes
 router.get('/delete-employee-request', auth, superadminController.deleteEmployeeRequest);
-router.get('/edit-employee-request',auth, superadminController.editEmployeeRequest);
-router.get('/add-employee-request',auth, superadminController.addEmployeeRequest);
+router.get('/edit-employee-request', auth, superadminController.editEmployeeRequest);
+router.get('/add-employee-request', auth, superadminController.addEmployeeRequest);
 router.get("/all-employee-request", superadminController.viewAllEmployeeRequest);
 router.get('/employee-request/:id', superadminController.viewEmployeeRequest);
 router.post('/approve-employee-request', superadminController.approveEmployeeRequest);
@@ -54,10 +54,12 @@ router.get("/attendance-details", superadminController.fetchAttendanceDetails);
 
 //Manage supervisors
 //This gives only supervisors forget d naming
-router.get("/list-of-admins-and-supervisors",auth, superadminController.getSupervisorsAndAdmin);
+router.get("/list-of-admins-and-supervisors", auth, superadminController.getSupervisorsAndAdmin);
 
 // This give admins
-router.get("/list-of-admins",auth, superadminController.getAdmins);
+router.get("/list-of-admins", auth, role(["super-admin"]), superadminController.getAdmins);
+// Create acess code for admins
+router.post("/admin-code", auth, role(["super-admin"]), superadminController.setCode);
 router.post("/search-supervisor", superadminController.searchSupervisor);
 router.get("/filter-supervisors-by-zones/:id", superadminController.filterSupervisorByZone);
 router.get("/filter-supervisors-by-lga/:id", superadminController.filterSupervisorByLGA);
@@ -72,6 +74,6 @@ router.put('/undo-admin-verification/:id', superadminController.undoAdminVerific
 
 //SuperAdmin router 
 router.get("/fetch-super-admin-data", superadminController.fetchSuperAdminProfile);
-router.patch("/edit-admin-data",auth, superadminController.editAdminProfile);
+router.patch("/edit-admin-data", auth, superadminController.editAdminProfile);
 
 module.exports = router;

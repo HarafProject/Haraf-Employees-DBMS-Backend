@@ -8,6 +8,7 @@ exports.getAllBeneficiary = async (req, res) => {
   let totalBeneficaries;
   if (req.user.role === "admin") {
     totalBeneficaries = await Beneficiary.find({ zone: req.user.zone })
+      .sort({ createdAt: -1 })
       .populate("ward")
       .populate("lga")
       .populate("zone")
@@ -15,6 +16,7 @@ exports.getAllBeneficiary = async (req, res) => {
       .exec()
   } else {
     totalBeneficaries = await Beneficiary.find()
+      .sort({ createdAt: -1 })
       .populate("ward")
       .populate("lga")
       .populate("zone")

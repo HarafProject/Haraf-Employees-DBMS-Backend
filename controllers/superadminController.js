@@ -8,7 +8,7 @@ const SupervisorRequest = require("../models/supervisorRequest");
 const Attendance = require("../models/attendanceRecord");
 const AllAttendance = require("../models/attendance");
 const Ward = require("../models/ward");
-
+const AdminCode = require("../models/adminCode")
 const bcrypt = require("bcrypt");
 const { search } = require("../routes/superadmin");
 const { Admin } = require("../models/admin");
@@ -403,6 +403,7 @@ exports.editEmployeeRequest = async (req, res) => {
       status: 'pending',
       type: "edit-employee",
     })
+      .sort({ created: -1 })
       .populate({
         path: "employee",
         populate: [
@@ -423,6 +424,7 @@ exports.editEmployeeRequest = async (req, res) => {
       status: 'pending',
       type: "edit-employee",
     })
+      .sort({ created: -1 })
       .populate({
         path: "employee",
         populate: [
@@ -455,6 +457,7 @@ exports.addEmployeeRequest = async (req, res) => {
       status: 'pending',
       type: "add-employee",
     })
+      .sort({ created: -1 })
       .populate({
         path: "employee",
         populate: [
@@ -475,6 +478,7 @@ exports.addEmployeeRequest = async (req, res) => {
       status: 'pending',
       type: "add-employee",
     })
+      .sort({ created: -1 })
       .populate({
         path: "employee",
         populate: [
@@ -546,6 +550,7 @@ exports.deleteEmployeeRequest = async (req, res) => {
       status: 'pending',
       type: "delete-employee",
     })
+      .sort({ created: -1 })
       .populate({
         path: "employee",
         populate: [
@@ -566,6 +571,7 @@ exports.deleteEmployeeRequest = async (req, res) => {
       status: 'pending',
       type: "delete-employee",
     })
+      .sort({ created: -1 })
       .populate({
         path: "employee",
         populate: [
@@ -804,6 +810,7 @@ exports.fetchAttendanceDetails = async (req, res) => {
 exports.getSupervisorsAndAdmin = async (req, res) => {
   if (req.user.role === "admin") {
     const data = await Users.find({ zone: req.user.zone }, { password: 0 })
+      .sort({ createdAt: -1 })
       .populate("zone")
       .populate("lga")
       .exec();
@@ -814,6 +821,7 @@ exports.getSupervisorsAndAdmin = async (req, res) => {
     });
   } else {
     const data = await Users.find({}, { password: 0 })
+      .sort({ createdAt: -1 })
       .populate("zone")
       .populate("lga")
       .exec();
@@ -831,6 +839,7 @@ exports.getSupervisorsAndAdmin = async (req, res) => {
 exports.getAdmins = async (req, res) => {
 
   const data = await Admin.find({}, { password: 0 })
+    .sort({ createdAt: -1 })
     .populate("zone")
     .populate("lga")
     .exec();
@@ -842,6 +851,25 @@ exports.getAdmins = async (req, res) => {
   });
 
 };
+
+//Manage supervisors
+exports.setCode = async (req, res) => {
+  const { code } = req.body
+
+  const adminCode = new AdminCode({
+    code
+  })
+
+  const data = await adminCode.save()
+
+  res.status(200).json({
+    success: true,
+    message: "Successful",
+    data,
+  });
+
+};
+
 
 exports.searchSupervisor = async (req, res) => {
   const searchQuery = req.body.searchParams;

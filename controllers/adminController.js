@@ -13,9 +13,30 @@ const SupervisorRequest = require("../models/supervisorRequest");
 const SupervisorNotification = require("../models/notifySupervisor")
 const { Supervisor_Notification } = require("../utils/sendMail")
 const Beneficiary = require('../models/employee');
+const adminCode = require("../models/adminCode");
 
 
 
+exports.confirmCode = async (req, res) => {
+  const { code } = req.body
+
+  const isValid = await adminCode.findOne({ code })
+  if (isValid) {
+    res.status(200).json({
+      success: true,
+      message: "Successful",
+
+    });
+  } else {
+    res.status(StatusCodes.NOT_ACCEPTABLE).json({
+      success: false,
+      error: "Un -Authorize"
+    });
+  }
+
+
+
+};
 exports.work_typology = async (req, res) => {
   const { name } = req.body;
 
@@ -143,35 +164,35 @@ exports.handleSupervisorRequest = async (req, res) => {
     .populate("user")
     .exec()
 
-// // Give supervisor right of action
-//   if (action === "approved" && type !== "add") {
-//     // Action to edit or delete
-//     await Beneficiary.findByIdAndUpdate(request.employee,
-//       {
-//         $set: {
-//           supervisorAction: type
-//         }
-//       }, { new: true })
-//       .exec()
+  // // Give supervisor right of action
+  //   if (action === "approved" && type !== "add") {
+  //     // Action to edit or delete
+  //     await Beneficiary.findByIdAndUpdate(request.employee,
+  //       {
+  //         $set: {
+  //           supervisorAction: type
+  //         }
+  //       }, { new: true })
+  //       .exec()
 
-//     await User.findByIdAndUpdate(request.user._id,
-//       {
-//         $set: {
-//           operations: type
-//         }
-//       }, { new: true })
-//       .exec()
-//   } else if (action === "approved" && type === "add") {
-//     // Action to add
-//     await User.findByIdAndUpdate(request.user._id,
-//       {
-//         $set: {
-//           operations: "create"
-//         }
-//       }, { new: true })
-//       .populate("user")
-//       .exec()
-//   }
+  //     await User.findByIdAndUpdate(request.user._id,
+  //       {
+  //         $set: {
+  //           operations: type
+  //         }
+  //       }, { new: true })
+  //       .exec()
+  //   } else if (action === "approved" && type === "add") {
+  //     // Action to add
+  //     await User.findByIdAndUpdate(request.user._id,
+  //       {
+  //         $set: {
+  //           operations: "create"
+  //         }
+  //       }, { new: true })
+  //       .populate("user")
+  //       .exec()
+  //   }
 
   const notifySupervisor = new SupervisorNotification({
     supervisor: request.user,
@@ -186,6 +207,7 @@ exports.handleSupervisorRequest = async (req, res) => {
   res.status(StatusCodes.OK).json({
     status: "success",
     message: `Supervisor Request ${action} Successfully`,
+    request
   });
 };
 
@@ -286,7 +308,6 @@ exports.getBeneficiaryAttendnanceAnalytics = async (req, res) => {
       data = await AttendanceRecord.find({ date: new Date(value) })
         .select("status lga zone workTypology")
         .populate("lga")
-        .exec()
         .exec()
     }
 

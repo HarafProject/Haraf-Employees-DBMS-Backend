@@ -54,6 +54,7 @@ exports.validateEditUser = (req) => {
 
 
 exports.validateEmployee = (req) => {
+  
   const schema = Joi.object({
     fullName: Joi.string().min(2).max(250).required(),
     BVN: Joi.string().min(10).max(250).required(),

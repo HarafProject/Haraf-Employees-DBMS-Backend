@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 
 const mongoose = require("mongoose");
 const adminSchema = new mongoose.Schema({
-    reference: { type: String, required: true, unique: true },
+  reference: { type: String, required: true, unique: true },
   firstname: {
     type: String,
     required: true,
