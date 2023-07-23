@@ -1,27 +1,57 @@
 const axios = require('axios');
 
 exports.Verify_BVN = async (firstname, lastname, accountNumber, bankcode) => {
+    try {
+        const response = await verifyBVN(firstname, lastname, accountNumber, bankcode);
 
-    data = {
+        if (response.data.status === 400 || response.data.status === 422) {
+            // Retry verification with the second method
+            return await BVN_Second_Verify(firstname, lastname, accountNumber, bankcode);
+        } else {
+            return response?.data;
+        }
+    } catch (error) {
+        console.error("Error during BVN verification:", error);
+        throw new Error("BVN verification failed.");
+    }
+};
+
+const verifyBVN = async (firstname, lastname, accountNumber, bankcode) => {
+    const data = {
         firstname,
         lastname,
         accountNumber,
-        bankcode
-    }
-    
+        bankcode,
+    };
+
     try {
         const response = await axios.post('http://ec2-52-17-233-72.eu-west-1.compute.amazonaws.com:8080/yolaIntegration/getNubanAccount', data);
-
-        return response?.data
-
+        return response;
     } catch (error) {
-        console.error(error.response.data);
+        console.error("Error during initial BVN verification:", error);
+        throw new Error("Initial BVN verification failed.");
+    }
+};
+
+const BVN_Second_Verify = async (firstname, lastname, accountNumber, bankcode) => {
+    const data = {
+        firstname,
+        lastname,
+        accountNumber,
+        bankcode,
+    };
+
+    try {
+        const response = await axios.post('http://52.17.233.72:8080/yolaIntegration/verifyAccount', data);
+        return response.data;
+    } catch (error) {
+        console.error("Error during second BVN verification:", error);
         return error?.response.data
     }
 };
 
-exports.BVN_Bank_List = async () =>{
-    
+exports.BVN_Bank_List = async () => {
+
     try {
         const response = await axios.get('http://ec2-52-17-233-72.eu-west-1.compute.amazonaws.com:8080/yolaIntegration/getNubanBanks');
         return response?.data
