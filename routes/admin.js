@@ -17,6 +17,7 @@ router.put('/supervisor/:id', auth, role(["admin", "super-admin"]),userControlle
 router.put('/handle-request/:id', auth, role(["admin", "super-admin"]),adminController.handleSupervisorRequest);
 //Create Admin
 router.post("/create-admin", validate(validateAdmin), adminController.createAdmin);
+
 router.post("/login", validate(loginValidator), adminController.login);
 
 router.get('/data-summary',auth,role(["admin", "super-admin"]),adminController.getDataSummary);
@@ -30,5 +31,7 @@ router.get('/attendance-dates',auth,role(["admin", "super-admin"]), adminControl
 router.get('/attendance-weeks',auth,role(["admin", "super-admin"]), adminController.getUniqueAttendanceWeeks);
 
 router.get('/beneficiary-attendance-analytics',auth,role(["admin", "super-admin"]), adminController.getBeneficiaryAttendnanceAnalytics);
+
+router.get('/beneficiary-attendance-analytics/report',auth,role(["admin", "super-admin"]), adminController.getBeneficiaryAttendnanceData);
 
 module.exports = router;

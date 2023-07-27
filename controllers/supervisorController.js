@@ -34,7 +34,7 @@ exports.verify_Beneficiary_BVN = async (req, res) => {
 
     // Verify bank account number
     const result = await Verify_BVN(firstname, lastname, accountNumber, bankcode);
-    console.log(result)
+
 
     // Invalid account number
     if (!result.bvn) {
@@ -151,8 +151,11 @@ exports.addEmployee = async (req, res) => {
                 "BVN"
             ]);
 
-        const result = await cloudinary.uploader.upload(req.file.path);
-        employee.photo = result.secure_url
+        if (req?.file) {
+            const result = await cloudinary.uploader.upload(req.file.path);
+            employee.photo = result.secure_url
+        }
+
         employee.zone = req.user.zone
         employee.lga = req.user.lga
 
