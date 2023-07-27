@@ -377,3 +377,78 @@ exports.getBeneficiaryAttendnanceAnalytics = async (req, res) => {
 
 };
 
+exports.getBeneficiaryAttendnanceData = async (req, res) => {
+  const { type, value, lga } = req.query
+
+  if (!type || !value || !lga) return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+    status: "Failed",
+    error: "All inputs is required."
+  });
+
+  let data;
+  if (type === "weekly") {
+    const weekNumber = Number(value);
+    const year = new Date().getFullYear();
+
+    // Create a new date object for January 1st of the current year
+    const januaryFirst = new Date(year, 0, 1);
+
+    // Get the day of the week for January 1st (0 - Sunday, 1 - Monday, ..., 6 - Saturday)
+    const januaryFirstDayOfWeek = januaryFirst.getDay();
+
+    // Calculate the number of days to add to get to the first day of the desired week
+    const daysToAdd = (weekNumber - 1) * 7 - januaryFirstDayOfWeek;
+
+    // Create the date object for the first day of the desired week
+    const firstDayOfWeek = new Date(year, 0, 1 + daysToAdd);
+    // Create the date object for the last day of the desired week
+    const lastDayOfWeek = new Date(firstDayOfWeek);
+    lastDayOfWeek.setDate(lastDayOfWeek.getDate() + 6);
+
+    data = await AttendanceRecord.find({
+      lga,
+      date: { $gte: firstDayOfWeek, $lte: lastDayOfWeek }
+    })
+      .select("status lga zone workTypology employee date")
+      .populate("lga")
+      .populate({
+        path: 'employee',
+        populate: {
+          path: 'ward',
+          model: 'Ward',
+          select: "name"
+        }
+      })
+      .exec();
+
+
+  } else if (type === "monthly") {
+    year = new Date().getFullYear()
+    const fromDate = new Date(`${year}-${value}-${1}`);
+    const toDate = new Date(fromDate.getFullYear(), fromDate.getMonth() + 1, 0);
+
+    data = await AttendanceRecord.find({
+      lga,
+      date: { '$gte': fromDate, '$lte': toDate }
+    })
+      .select("status lga zone workTypology employee date")
+      .populate("lga")
+      .populate({
+        path: 'employee',
+        populate: {
+          path: 'ward',
+          model: 'Ward',
+          select: "name"
+        }
+      })
+      .exec();
+
+  }
+  // console.log(data)
+  res.status(StatusCodes.OK).json({
+    status: "Success",
+    data
+  });
+
+};
+

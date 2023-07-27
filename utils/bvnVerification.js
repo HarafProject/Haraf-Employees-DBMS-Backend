@@ -11,8 +11,7 @@ exports.Verify_BVN = async (firstname, lastname, accountNumber, bankcode) => {
             return response?.data;
         }
     } catch (error) {
-        console.error("Error during BVN verification:", error);
-        throw new Error("BVN verification failed.");
+        return error?.response.data
     }
 };
 
@@ -28,8 +27,7 @@ const verifyBVN = async (firstname, lastname, accountNumber, bankcode) => {
         const response = await axios.post('http://ec2-52-17-233-72.eu-west-1.compute.amazonaws.com:8080/yolaIntegration/getNubanAccount', data);
         return response;
     } catch (error) {
-        console.error("Error during initial BVN verification:", error);
-        throw new Error("Initial BVN verification failed.");
+        return error?.response.data
     }
 };
 
@@ -39,6 +37,7 @@ const BVN_Second_Verify = async (firstname, lastname, accountNumber, bankcode) =
         lastname,
         accountNumber,
         bankcode,
+        phone: "07036423775"
     };
 
     try {
