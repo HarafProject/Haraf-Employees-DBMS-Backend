@@ -49,6 +49,10 @@ const EmployeeSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId, required: false, ref: 'WorkTypology'
 
   },
+  subWorkTypology: {
+    type: mongoose.Schema.Types.ObjectId, required: false, ref: 'SubWorkTypology'
+
+  },
   maritalStatus: {
     type: String,
 
@@ -64,6 +68,12 @@ const EmployeeSchema = new mongoose.Schema({
     type: String,
   },
   householdHead: {
+    type: String,
+  },
+  validId:{
+    type: String,
+  },
+  idNumber:{
     type: String,
   },
   sex: {

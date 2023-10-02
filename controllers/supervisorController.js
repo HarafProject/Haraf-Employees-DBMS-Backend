@@ -184,6 +184,7 @@ exports.getEmployee = async (req, res) => {
     const employees = await Employee.find({ lga: req.user.lga })
         .sort({ createdAt: -1 })
         .populate("workTypology", "name")
+        .populate("subWorkTypology", "name")
         .populate("zone", "name")
         .populate("lga", "name")
         .populate("ward", "name");
