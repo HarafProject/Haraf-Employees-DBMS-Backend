@@ -14,38 +14,39 @@ mongoose.plugin(new SoftDelete({
 const EmployeeSchema = new mongoose.Schema({
   fullName: {
     type: String,
-    required: true,
+    required: false,
   },
   phone: {
     type: String,
-    required: true
+    required: false
   },
-  bankName: { type: String, required: true },
-  bankCode: { type: String, required: true },
-  accountNumber: { type: String, required: true },
-  BVN: { type: String, required: true },
+  community:{ type: String, required: false },
+  bankName: { type: String, required: false },
+  bankCode: { type: String, required: false },
+  accountNumber: { type: String, required: false },
+  BVN: { type: String, required: false },
   state: {
-    type: mongoose.Schema.Types.ObjectId, required: true, default: "630500e1c9ae75a1ce111f15"
+    type: mongoose.Schema.Types.ObjectId, required: false, default: "630500e1c9ae75a1ce111f15"
   },
   zone: {
-    type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Zone'
+    type: mongoose.Schema.Types.ObjectId, required: false, ref: 'Zone'
   },
   lga: {
-    type: mongoose.Schema.Types.ObjectId, required: true, ref: 'LGA'
+    type: mongoose.Schema.Types.ObjectId, required: false, ref: 'LGA'
   },
   ward: {
-    type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Ward'
+    type: mongoose.Schema.Types.ObjectId, required: false, ref: 'Ward'
   },
   address: {
     type: String,
-    required: true,
+    required: false,
   },
   age: {
     type: String,
-    required: true,
+    required: false,
   },
   workTypology: {
-    type: mongoose.Schema.Types.ObjectId, required: true, ref: 'WorkTypology'
+    type: mongoose.Schema.Types.ObjectId, required: false, ref: 'WorkTypology'
 
   },
   maritalStatus: {
@@ -57,6 +58,9 @@ const EmployeeSchema = new mongoose.Schema({
 
   },
   householdSize: {
+    type: String,
+  },
+  qualification: {
     type: String,
   },
   householdHead: {

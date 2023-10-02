@@ -14,6 +14,7 @@ const SupervisorNotification = require("../models/notifySupervisor")
 const { Supervisor_Notification } = require("../utils/sendMail")
 const Beneficiary = require('../models/employee');
 const adminCode = require("../models/adminCode");
+const SubWorkTypology = require("../models/subWorkTypology");
 
 
 
@@ -51,6 +52,26 @@ exports.work_typology = async (req, res) => {
   return res.status(StatusCodes.OK).json({
     status: "success",
     message: "Work Typolgy Updated succesfully.",
+
+  });
+
+};
+
+exports.sub_work_typology = async (req, res) => {
+  const { sector,name } = req.body;
+
+  await SubWorkTypology.findOneAndUpdate({ name }, {
+    $set: {
+      sector,
+      name
+    }
+  }, {
+    upsert: true
+  })
+
+  return res.status(StatusCodes.OK).json({
+    status: "success",
+    message: "Sub Work Typolgy Updated succesfully.",
 
   });
 

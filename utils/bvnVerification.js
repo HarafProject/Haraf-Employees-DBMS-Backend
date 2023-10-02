@@ -31,7 +31,7 @@ const verifyBVN = async (firstname, lastname, accountNumber, bankcode) => {
     }
 };
 
-const BVN_Second_Verify = async (firstname, lastname, accountNumber, bankcode) => {
+exports.BVN_Second_Verify = async (firstname, lastname, accountNumber, bankcode) => {
     const data = {
         firstname,
         lastname,
@@ -42,10 +42,11 @@ const BVN_Second_Verify = async (firstname, lastname, accountNumber, bankcode) =
 
     try {
         const response = await axios.post('http://52.17.233.72:8080/yolaIntegration/verifyAccount', data);
+        // console.log(response)
         return response.data;
     } catch (error) {
-        console.error("Error during second BVN verification:", error);
-        return error?.response.data
+        // console.log(error?.response, "Error")
+        return error.response
     }
 };
 

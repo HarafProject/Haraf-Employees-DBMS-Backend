@@ -8,7 +8,8 @@ const Attendance = require("../models/attendance")
 const AttendanceRecord = require("../models/attendanceRecord")
 const cloudinary = require("../utils/cloudinary");
 const SupervisorNotification = require("../models/notifySupervisor")
-const { Verify_BVN, BVN_Bank_List } = require("../utils/bvnVerification")
+const { Verify_BVN, BVN_Bank_List } = require("../utils/bvnVerification");
+const SubWorkTypology = require("../models/subWorkTypology");
 
 exports.getNotifications = async (req, res) => {
     const notifications = await SupervisorNotification.find({ supervisor: req.user._id })
@@ -34,6 +35,7 @@ exports.verify_Beneficiary_BVN = async (req, res) => {
 
     // Verify bank account number
     const result = await Verify_BVN(firstname, lastname, accountNumber, bankcode);
+    // console.log(result)
 
 
     // Invalid account number
@@ -116,6 +118,15 @@ exports.work_typology = async (req, res) => {
     res.status(StatusCodes.OK).json({
         status: "success",
         workTypology
+    });
+}
+
+exports.sub_work_typology = async (req, res) => {
+    const subWorkTypology = await SubWorkTypology.find({ sector: req.params.id }).exec()
+
+    res.status(StatusCodes.OK).json({
+        status: "success",
+        subWorkTypology
     });
 }
 
