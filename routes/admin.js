@@ -12,6 +12,7 @@ router.get('/me',  userController.getUser)
 // Create acess code for admins
 router.post("/confirm-code", adminController.confirmCode);
 router.post('/work-typology', auth,role(["admin","super-admin"]), adminController.work_typology);
+router.post('/sub-work-typology',  adminController.sub_work_typology);
 router.get('/supervisors', auth, role(["admin","super-admin"]), userController.getUsers);
 router.put('/supervisor/:id', auth, role(["admin", "super-admin"]),userController.updateSupervisor);
 router.put('/handle-request/:id', auth, role(["admin", "super-admin"]),adminController.handleSupervisorRequest);

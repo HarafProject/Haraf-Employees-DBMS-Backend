@@ -34,6 +34,7 @@ exports.verify_Beneficiary_BVN = async (req, res) => {
 
     // Verify bank account number
     const result = await Verify_BVN(firstname, lastname, accountNumber, bankcode);
+    // console.log(result)
 
 
     // Invalid account number
