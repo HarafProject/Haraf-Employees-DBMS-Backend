@@ -238,6 +238,7 @@ exports.upload_excel = async (req, res) => {
                         householdSize: item["HHS"],
                         outOfSchool: item["Out of school"],
                         householdHead: item["HEAD OF HH"],
+                        socu:true
                     });
 
                     return await newEmployee.save();

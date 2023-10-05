@@ -198,6 +198,7 @@ exports.getEmployee = async (req, res) => {
 exports.getSingleEmployee = async (req, res) => {
     const employee = await Employee.findById(req.params.id)
         .populate("workTypology", "name")
+        .populate("subWorkTypology", "name")
         .populate("zone", "name")
         .populate("lga", "name")
         .populate("ward", "name");
@@ -235,12 +236,13 @@ exports.updateSingleEmployee = async (req, res) => {
     })
         .populate("ward")
         .populate("workTypology")
+        .populate("subWorkTypology")
         .exec()
-    const a = await SupervisorNotification.findByIdAndUpdate(notification, {
-        $set: {
-            actionTaken: true
-        }
-    })
+    // const a = await SupervisorNotification.findByIdAndUpdate(notification, {
+    //     $set: {
+    //         actionTaken: true
+    //     }
+    // })
     return res.status(StatusCodes.OK).json({
         success: true,
         message: "Employee details updated successfully.",
@@ -338,6 +340,7 @@ exports.submit_attendance = async (req, res) => {
             attempt: item.attempt,
             date,
             status: item.status,
+            absentReason: item.absentReason,
             zone: item.zone,
             lga: item.lga,
             ward: item.ward,
