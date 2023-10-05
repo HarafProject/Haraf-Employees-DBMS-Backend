@@ -14,11 +14,13 @@ locationRoutes.get('/zones', locationController.zones);
 
 locationRoutes.post('/lga', locationController.addLGA);
 locationRoutes.post('/lga/list', locationController.addLGAList);
+locationRoutes.get('/unique-lgas', locationController.uniqueLgasCount);
 locationRoutes.get('/lga', locationController.lgas);
 locationRoutes.get('/lga/:zone_id', locationController.lgasByZone);
 
 locationRoutes.post('/ward', locationController.addWard);
 locationRoutes.get('/wards', locationController.wards);
+locationRoutes.get('/unique-wards', locationController.uniqueWardsCount);
 locationRoutes.post('/ward/list', locationController.addWardList);
 locationRoutes.get('/ward/:lga_id', locationController.wardsByLGA);
 

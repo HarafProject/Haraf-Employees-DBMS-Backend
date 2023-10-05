@@ -137,7 +137,7 @@ exports.upload_excel = async (req, res) => {
         var workbook = XLSX.readFile(path);
         var sheet_name_list = workbook.SheetNames;
         let jsonData = XLSX.utils.sheet_to_json(
-            workbook.Sheets[sheet_name_list[0]]
+            workbook.Sheets[sheet_name_list[12]]
         );
 
         function generateRandomNumber(numbersArray) {
@@ -226,7 +226,7 @@ exports.upload_excel = async (req, res) => {
                         accountNumber: item.ACC_NUM,
                         community: item.COMMUNITY,
                         zone: "64a3f60b2a5ef2032b4b0ccf", // Replace with actual zone ID
-                        ward: "64a83acbd5cd5364da9d349a", // Replace with actual ward ID
+                        ward: "64a83acbd5cd5364da9d34ac", // Replace with actual ward ID
                         lga: "64a3f8c73a8c016cd65f6698", // Replace with actual LGA ID
                         workTypology: typologyData.typology,
                         subWorkTypology: typologyData.subTypology,
@@ -238,6 +238,7 @@ exports.upload_excel = async (req, res) => {
                         householdSize: item["HHS"],
                         outOfSchool: item["Out of school"],
                         householdHead: item["HEAD OF HH"],
+                        socu:true
                     });
 
                     return await newEmployee.save();
@@ -254,7 +255,7 @@ exports.upload_excel = async (req, res) => {
         }
 
         // Respond with a success message
-        res.json({ message: 'Employees created successfully' });
+        res.json({ message: 'Employees created successfully',jsonData });
     } catch (error) {
         console.error("Error processing data:", error);
         res.status(500).json({ error: 'An error occurred while processing data' });

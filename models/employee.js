@@ -53,6 +53,9 @@ const EmployeeSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId, required: false, ref: 'SubWorkTypology'
 
   },
+  PPA: {
+    type: String,
+  },
   maritalStatus: {
     type: String,
 
@@ -64,6 +67,7 @@ const EmployeeSchema = new mongoose.Schema({
   householdSize: {
     type: String,
   },
+
   qualification: {
     type: String,
   },
@@ -78,6 +82,10 @@ const EmployeeSchema = new mongoose.Schema({
   },
   sex: {
     type: String,
+  },
+  socu: {
+    type: Boolean,
+    default:false
   },
   photo: {
     type: String,

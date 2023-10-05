@@ -13,6 +13,7 @@ exports.getAllBeneficiary = async (req, res) => {
       .populate("lga")
       .populate("zone")
       .populate("workTypology")
+      .populate("subWorkTypology")
       .exec()
   } else {
     totalBeneficaries = await Beneficiary.find()
@@ -21,6 +22,7 @@ exports.getAllBeneficiary = async (req, res) => {
       .populate("lga")
       .populate("zone")
       .populate("workTypology")
+      .populate("subWorkTypology")
       .exec();
   }
 

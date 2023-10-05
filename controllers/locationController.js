@@ -4,6 +4,7 @@ const Zone = require("../models/zone")
 const Ward = require("../models/ward")
 // const State = require('../models/state');
 const StatusCodes = require('../utils/status-codes');
+const Employee = require('../models/employee');
 // const Country = require('./../models/country');
 
 // exports.addCountry = async (req, res, next) => {
@@ -249,6 +250,17 @@ exports.lgas = async (req, res) => {
     });
 
 }
+exports.uniqueLgasCount = async (req, res) => {
+
+    const lgas = await Employee.distinct('lga', { isDeleted: false });
+    const uniqueLgas = lgas.length;
+
+    return res.status(StatusCodes.OK).json({
+        status: 'success',
+        uniqueLgas
+    });
+
+}
 
 
 exports.lgasByZone = async (req, res) => {
@@ -296,7 +308,7 @@ exports.addWard = async (req, res) => {
 }
 
 exports.addWardList = async (req, res) => {
-	
+
     req.body.wards.forEach(async ward => {
         const check = await Ward.find({ lga: req.body.lga, name: ward }).exec();
 
@@ -334,6 +346,19 @@ exports.wards = async (req, res) => {
     });
 
 }
+
+exports.uniqueWardsCount = async (req, res) => {
+
+    const wards = await Employee.distinct('ward', { isDeleted: false });
+    const uniqueWards = wards.length;
+
+    return res.status(StatusCodes.OK).json({
+        status: 'success',
+        uniqueWards
+    });
+
+}
+
 exports.wardsByLGA = async (req, res) => {
 
     const wards = await Ward.find({ lga: req.params.lga_id }).sort({ name: "asc" }).populate('lga', '_id name').exec();

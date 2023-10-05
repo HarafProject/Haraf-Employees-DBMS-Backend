@@ -54,10 +54,10 @@ exports.validateEditUser = (req) => {
 
 
 exports.validateEmployee = (req) => {
-  
+
   const schema = Joi.object({
     fullName: Joi.string().min(2).max(250).required(),
-    BVN: Joi.string().min(10).max(250).required(),
+    // BVN: Joi.string().min(10).max(250).required(),
     phone: Joi.string().min(11)
       .message('Please enter a valid phone number')
       .required(),
@@ -73,12 +73,15 @@ exports.validateEmployee = (req) => {
     ward: Joi.string().regex(/^[0-9a-fA-F]{24}$/)
       .message('Please enter a valid Ward ID')
       .required(),
-    address: Joi.string().min(2).max(250).required(),
+    community: Joi.string().min(2).max(250).required(),
     age: Joi.string().min(2).max(250).required(),
     workTypology: Joi.string().regex(/^[0-9a-fA-F]{24}$/)
+      .message('Please enter a valid WorkSector ID')
+      .required(),
+    subWorkTypology: Joi.string().regex(/^[0-9a-fA-F]{24}$/)
       .message('Please enter a valid Typology ID')
       .required(),
-    maritalStatus: Joi.string().min(2).max(250),
+    maritalStatus: Joi.string().optional(),
     specialDisability: Joi.string().min(2).max(250),
     householdSize: Joi.string().min(1).max(250),
     householdHead: Joi.string().min(2).max(250),
@@ -105,7 +108,7 @@ exports.validateBeneficiaryBVN = (req) => {
       .min(0)
       .max(1024)
       .required(),
-      bankName: Joi.string()
+    bankName: Joi.string()
       .min(0)
       .max(1024)
       .optional(),
@@ -172,6 +175,7 @@ exports.attendance = (req) => {
       .required(),
     attendanceRecord: Joi.array().items(Joi.object({
       status: Joi.string().required(),
+      absentReason: Joi.string().optional(),
       attempt: Joi.array().items(Joi.object({
         status: Joi.string().required(),
         date: Joi.date()
