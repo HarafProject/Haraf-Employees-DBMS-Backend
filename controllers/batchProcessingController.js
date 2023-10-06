@@ -5,6 +5,7 @@ const Beneficiary = require("../models/beneficiary");
 const { Verify_BVN, BVN_Second_Verify } = require("../utils/bvnVerification");
 const { result } = require("lodash");
 const Employee = require("../models/employee");
+const Ward = require("../models/ward");
 
 // exports.upload_excel = async (req, res) => {
 
@@ -136,10 +137,33 @@ exports.upload_excel = async (req, res) => {
         let path = req.file.path;
         var workbook = XLSX.readFile(path);
         var sheet_name_list = workbook.SheetNames;
-        let jsonData = XLSX.utils.sheet_to_json(
-            workbook.Sheets[sheet_name_list[12]]
-        );
+        // let list_no = 1
+        // let list_no = 2
+        // let list_no = 3
+        // let list_no = 4
+        // let list_no = 5
+        // let list_no = 6
+        // let list_no = 7
+        // let list_no = 8
+        // let list_no = 9
+        let list_no = 10
+        const worksheet = workbook.Sheets[sheet_name_list[list_no]];
 
+        const ward = await Ward.find({ name: sheet_name_list[list_no] });
+        let wardID = ward[0]._id;
+        // await findOrCreateEmployee(item, wardID);
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+        // Process each item in the JSON data
+        for (const item of jsonData) {
+
+            if (item.WARD === sheet_name_list[list_no]) {
+                await findOrCreateEmployee(item, wardID);
+            } else {
+
+            }
+
+        }
         function generateRandomNumber(numbersArray) {
             const rand = Math.floor(Math.random() * numbersArray.length)
             return rand
@@ -147,6 +171,7 @@ exports.upload_excel = async (req, res) => {
 
         // Define a function to generate random typology data
         function generateTypologyData(params) {
+            // generate work sector and typology
             // generate work sector and typology
             const typologies = [
                 '64a4ac99014ab6d0c08ad3a0',
@@ -207,14 +232,16 @@ exports.upload_excel = async (req, res) => {
         }
 
         // Define a function to find or create a new employee
-        async function findOrCreateEmployee(item) {
+        async function findOrCreateEmployee(item, ward) {
             try {
                 // Replace this with your logic to find an existing employee or create a new one
-                const existingEmployee = await Employee.findOne({ fullName: item.FULLNAME });
+                // const existingEmployee = await Employee.find({ fullName: item.FULLNAME });
 
-                if (existingEmployee) {
-                    return existingEmployee;
-                } else {
+                // if (existingEmployee.length ) {
+               
+                //     await Employee.deleteOne({ fullName: item.FULLNAME })
+                //     // return existingEmployee;
+                // } else {
                     const typologyData = generateTypologyData();
 
                     const newEmployee = new Employee({
@@ -223,14 +250,14 @@ exports.upload_excel = async (req, res) => {
                         sex: item.SEX,
                         phone: item.PHONE,
                         bankName: item["BANK "],
-                        accountNumber: item.ACC_NUM,
+                        accountNumber: item["ACC NUM"],
                         community: item.COMMUNITY,
                         zone: "64a3f60b2a5ef2032b4b0ccf", // Replace with actual zone ID
-                        ward: "64a83acbd5cd5364da9d34ac", // Replace with actual ward ID
+                        ward, // Replace with actual ward ID
                         lga: "64a3f8c73a8c016cd65f6698", // Replace with actual LGA ID
                         workTypology: typologyData.typology,
                         subWorkTypology: typologyData.subTypology,
-                        validId: item.VALID_ID,
+                        validId: item["VALID ID"],
                         idNumber: item["ID NUMBER"],
                         qualification: item.QUA,
                         disability: item.Disability,
@@ -238,29 +265,26 @@ exports.upload_excel = async (req, res) => {
                         householdSize: item["HHS"],
                         outOfSchool: item["Out of school"],
                         householdHead: item["HEAD OF HH"],
-                        socu:true
+                        socu: true
                     });
 
                     return await newEmployee.save();
-                }
+                // }
             } catch (error) {
                 console.error("Error creating employee:", error);
                 throw error;
             }
         }
 
-        // Process each item in the JSON data
-        for (const item of jsonData) {
-            await findOrCreateEmployee(item);
-        }
-
         // Respond with a success message
-        res.json({ message: 'Employees created successfully',jsonData });
+        res.json({ message: 'Employees created successfully', data: jsonData.length, wardID });
     } catch (error) {
         console.error("Error processing data:", error);
         res.status(500).json({ error: 'An error occurred while processing data' });
     }
 };
+
+
 exports.data_processing = async (req, res) => {
     const page = parseInt(req.query.page) || 2; // Current page, default to 1
     const itemsPerPage = parseInt(req.query.perPage) || 5; // Items per page, default to 10
